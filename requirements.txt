@@ -1,0 +1,6 @@
+Django==4.2.16
+python-dotenv==1.0.1
+scikit-learn==1.4.2
+numpy==1.26.4
+requests==2.31.0
+Pillow==10.4.0

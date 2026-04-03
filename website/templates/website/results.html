@@ -1,0 +1,191 @@
+{% extends 'website/base.html' %}
+{% load static %}
+
+{% block title %}{{ query }} – Topiq Results{% endblock %}
+
+{% block content %}
+<section class="container results-page">
+  {% if no_results %}
+  <div class="no-results">
+    <div class="no-results-icon">🔍</div>
+    <h2>No resources found for "{{ query }}"</h2>
+    <p>{{ result.message|default:"Try a different search term or browse by semester below." }}</p>
+
+    <form method="GET" action="{% url 'website:search_results' %}" class="retry-search-card">
+      {% csrf_token %}
+      <div class="hero-search-row">
+        <input
+          type="text"
+          name="q"
+          value="{{ query }}"
+          placeholder="Try another study topic"
+          aria-label="Try another topic"
+        >
+        <button type="submit" class="search-btn">Search Again</button>
+      </div>
+    </form>
+
+    {% if semesters %}
+    <div class="semester-filter">
+      <span>Browse by Semester:</span>
+      <div class="chip-row">
+        {% for semester in semesters %}
+        <a href="{% url 'website:search_results' %}?semester={{ semester.id }}" class="semester-chip">
+          {{ semester.name }}
+        </a>
+        {% endfor %}
+      </div>
+    </div>
+    {% endif %}
+  </div>
+  {% else %}
+  <div class="stats-bar">
+    <div class="stat-chip">
+      <span class="dot"></span>
+      Showing results for: <strong>{{ query }}</strong>
+    </div>
+    <div class="stat-chip">📚 <strong>{{ total_resources }}</strong> resources found</div>
+    <div class="stat-chip">⏱ Avg. study time: <strong>{{ avg_study_time|default:"0 min" }}</strong></div>
+    {% if semester_name %}
+    <div class="stat-chip">📌 Semester: <strong>{{ semester_name }}</strong></div>
+    {% endif %}
+    {% if subject_name %}
+    <div class="stat-chip">📘 Subject: <strong>{{ subject_name }}</strong></div>
+    {% endif %}
+  </div>
+
+  <div class="results-grid">
+    <section>
+      {% if videos %}
+      <div class="section-header">
+        <div class="section-icon red">
+          <svg viewBox="0 0 24 24" aria-hidden="true">
+            <path d="M23 7s-.3-2-1.2-2.8c-1.1-1.2-2.4-1.2-3-1.3C15.9 2.8 12 2.8 12 2.8s-3.9 0-6.8.1C4.6 3 3.3 3 2.2 4.2 1.3 5 1 7 1 7S.7 9.3.7 11.6v2.2C.7 16.1 1 18.4 1 18.4s.3 2 1.2 2.8C3.3 22.4 4.8 22.3 5.5 22.4c2.3.2 9.5.3 9.5.3s3.9 0 6.8-.2c.6-.1 1.9-.1 3-1.3.9-.8 1.2-2.8 1.2-2.8S23.3 16.1 23.3 13.8v-2.2C23.3 9.3 23 7 23 7zM9.7 15.5v-7l6.6 3.5-6.6 3.5z"></path>
+          </svg>
+        </div>
+        <div>
+          <div class="section-title">Top 3 Video Suggestions</div>
+          <div class="section-subtitle">Ranked by recommendation score</div>
+        </div>
+        <div class="section-count">{{ videos|length }} videos</div>
+      </div>
+
+      {% for video in videos %}
+      <article class="video-card">
+        <div class="video-thumb">
+          {% if video.thumbnail_url %}
+          <img src="{{ video.thumbnail_url }}" alt="{{ video.title }}">
+          {% endif %}
+          <span class="diff-badge {{ video.difficulty_level }}">{{ video.get_difficulty_level_display }}</span>
+          <div class="play-btn">▶</div>
+          <span class="duration-badge">{{ video.duration|default:"—" }}</span>
+        </div>
+        <div class="video-body">
+          <div class="video-title">{{ video.title }}</div>
+          <div class="video-desc">{{ video.description }}</div>
+
+          {% if video.student_helpful_count > 0 %}
+          <div class="why-badge" data-helpful-display>
+            👍 <span class="helpful-count">{{ video.student_helpful_count }}</span> students found this helpful
+          </div>
+          {% endif %}
+
+          <div class="meta-row">
+            <span class="meta-pill">⭐ {{ video.rating|default:"0.0" }}</span>
+            <span class="meta-pill">Views: {{ video.view_count|default:"0" }}</span>
+          </div>
+
+          <div class="feedback-row">
+            <button class="feedback-btn helpful" type="button" data-resource-type="video" data-resource-id="{{ video.id }}" data-topic-id="{{ matched_topic.id }}">
+              👍 Helpful
+            </button>
+            <button class="feedback-btn not-helpful" type="button" data-resource-type="video" data-resource-id="{{ video.id }}" data-topic-id="{{ matched_topic.id }}">
+              👎 Not Helpful
+            </button>
+            <button class="bookmark-btn {% if matched_topic.id in bookmarked_topics %}active{% endif %}" type="button" data-topic-id="{{ matched_topic.id }}">
+              {% if matched_topic.id in bookmarked_topics %}⭐{% else %}☆{% endif %} Save Topic
+            </button>
+          </div>
+
+          <a href="{{ video.youtube_url }}" class="yt-btn" target="_blank" rel="noopener">▶ Open on YouTube</a>
+        </div>
+      </article>
+      {% endfor %}
+      {% endif %}
+    </section>
+
+    <section>
+      {% if readings %}
+      <div class="section-header">
+        <div class="section-icon blue">
+          <svg viewBox="0 0 24 24" aria-hidden="true">
+            <path d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-5 14H7v-2h7v2zm3-4H7v-2h10v2zm0-4H7V7h10v2z"></path>
+          </svg>
+        </div>
+        <div>
+          <div class="section-title">Articles &amp; Blogs</div>
+          <div class="section-subtitle">Reading resources for deeper understanding</div>
+        </div>
+        <div class="section-count">{{ readings|length }} articles</div>
+      </div>
+
+      {% for reading in readings %}
+      <article class="article-card">
+        <div class="article-icon {{ reading.resource_type }}">
+          {% if reading.resource_type == "pdf" %}PDF{% elif reading.resource_type == "blog" %}Blog{% elif reading.resource_type == "notes" %}Notes{% else %}Article{% endif %}
+        </div>
+        <div class="article-content">
+          <div class="article-type type-{{ reading.resource_type }}">{{ reading.get_resource_type_display }}</div>
+          <div class="article-title">{{ reading.title }}</div>
+          <div class="article-desc">{{ reading.description }}</div>
+
+          {% if reading.source_name %}
+          <div class="source-badge">📌 Source: {{ reading.source_name }}</div>
+          {% endif %}
+
+          {% if reading.student_helpful_count > 0 %}
+          <div class="why-badge" data-helpful-display>
+            👍 <span class="helpful-count">{{ reading.student_helpful_count }}</span> students found this helpful
+          </div>
+          {% endif %}
+
+          <div class="meta-row">
+            <span class="meta-pill">⭐ {{ reading.rating|default:"0.0" }}</span>
+            <span class="meta-pill">{{ reading.get_resource_type_display }}</span>
+          </div>
+
+          <div class="feedback-row">
+            <button class="feedback-btn helpful" type="button" data-resource-type="reading" data-resource-id="{{ reading.id }}" data-topic-id="{{ matched_topic.id }}">
+              👍 Helpful
+            </button>
+            <button class="feedback-btn not-helpful" type="button" data-resource-type="reading" data-resource-id="{{ reading.id }}" data-topic-id="{{ matched_topic.id }}">
+              👎 Not Helpful
+            </button>
+            <button class="bookmark-btn {% if matched_topic.id in bookmarked_topics %}active{% endif %}" type="button" data-topic-id="{{ matched_topic.id }}">
+              {% if matched_topic.id in bookmarked_topics %}⭐{% else %}☆{% endif %} Save Topic
+            </button>
+          </div>
+
+          <a href="{{ reading.url }}" class="read-link" target="_blank" rel="noopener">Read Article →</a>
+        </div>
+      </article>
+      {% endfor %}
+      {% endif %}
+    </section>
+  </div>
+
+  {% if similar_topics %}
+  <div class="similar-topics">
+    <h3>📌 Related Topics You Might Also Study</h3>
+    <div class="topic-chips">
+      {% for topic in similar_topics %}
+      <a href="{% url 'website:search_results' %}?q={{ topic.name|urlencode }}" class="topic-chip">
+        {{ topic.name }}
+      </a>
+      {% endfor %}
+    </div>
+  </div>
+  {% endif %}
+  {% endif %}
+</section>
+{% endblock %}

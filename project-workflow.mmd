@@ -1,0 +1,171 @@
+flowchart TD
+    A["Topiq Project Root"] --> B["1. Project Setup"]
+    A --> C["2. Django App Runtime"]
+    A --> D["3. User Search Workflow"]
+    A --> E["4. ML Recommendation Engine"]
+    A --> F["5. Feedback & Bookmark Loop"]
+    A --> G["6. AI Chat Workflow"]
+    A --> H["7. Admin & Seed Data"]
+    A --> I["8. Final Output to Student"]
+
+    subgraph SETUP["1. Project Setup"]
+        B1["Clone/Open Project"]
+        B2["Create Virtual Environment<br/>python -m venv myenv"]
+        B3["Activate Environment<br/>source myenv/bin/activate"]
+        B4["Install Dependencies<br/>pip install -r requirements.txt"]
+        B5["Configure .env<br/>SECRET_KEY / DEBUG / ALLOWED_HOSTS / ANTHROPIC_API_KEY"]
+        B6["Run Migrations<br/>python manage.py migrate"]
+        B7["Seed Demo Data<br/>python manage.py seed_data"]
+        B8["Start Server<br/>python manage.py runserver"]
+        B1 --> B2 --> B3 --> B4 --> B5 --> B6 --> B7 --> B8
+    end
+
+    subgraph RUNTIME["2. Django App Runtime"]
+        C1["Browser Request"]
+        C2["topiq/urls.py"]
+        C3["website/urls.py"]
+        C4["website/views.py"]
+        C5["website/templates/"]
+        C6["website/static/"]
+        C7["Response Back to Browser"]
+        C1 --> C2 --> C3 --> C4 --> C5
+        C5 --> C7
+        C6 --> C7
+    end
+
+    subgraph SEARCH["3. User Search Workflow"]
+        D1["Student Opens Homepage"]
+        D2["Student Enters Query<br/>Example: Deadlock"]
+        D3["GET /search/?q=deadlock"]
+        D4["search_results view"]
+        D5["search_topics(query)"]
+        D6["Build Context"]
+        D7["Render results.html"]
+        D1 --> D2 --> D3 --> D4 --> D5 --> D6 --> D7
+    end
+
+    subgraph ML["4. ML Recommendation Engine"]
+        E1["Load Active Topics from Database"]
+        E2["Build Topic Corpus<br/>topic name + subject + tags + keywords + description"]
+        E3["Normalize User Query"]
+        E4["TF-IDF Vectorizer"]
+        E5["Transform Query to Vector"]
+        E6["Cosine Similarity Against Topic Corpus"]
+        E7["Choose Best Matching Topic"]
+        E8["Fetch Top 3 Videos by ml_score"]
+        E9["Fetch Top 3 Readings by ml_score"]
+        E10["Calculate Avg Study Time"]
+        E11["Find Similar Topics"]
+        E12["Return Structured Result Dict"]
+        E1 --> E2 --> E3 --> E4 --> E5 --> E6 --> E7
+        E7 --> E8
+        E7 --> E9
+        E8 --> E10
+        E9 --> E10
+        E10 --> E11 --> E12
+    end
+
+    subgraph MLDETAIL["How Machine Learning Works"]
+        M1["Input Query<br/>binary tree / dead lock / banker algo"]
+        M2["Text Cleaning<br/>lowercase + normalize spaces"]
+        M3["TF-IDF learns important words from all topics"]
+        M4["Cosine similarity measures closeness between query and each topic"]
+        M5["Highest score above threshold = matched topic"]
+        M6["If sklearn unavailable -> fallback simple string matching"]
+        M1 --> M2 --> M3 --> M4 --> M5
+        M4 --> M6
+    end
+
+    subgraph SCORE["Resource Ranking Formula"]
+        S1["Each Video/Reading has:"]
+        S2["rating"]
+        S3["view_count"]
+        S4["student_helpful_count"]
+        S5["student_not_helpful_count"]
+        S6["feedback_score = helpful / total_feedback"]
+        S7["normalized_view_count = view_count / 1,000,000"]
+        S8["ml_score = rating × 0.4 + normalized_view_count × 0.3 + feedback_score × 0.3"]
+        S1 --> S2
+        S1 --> S3
+        S1 --> S4
+        S1 --> S5
+        S4 --> S6
+        S5 --> S6
+        S3 --> S7
+        S2 --> S8
+        S6 --> S8
+        S7 --> S8
+    end
+
+    subgraph FEEDBACK["5. Feedback & Bookmark Loop"]
+        F1["Student Clicks Helpful / Not Helpful"]
+        F2["POST /feedback/"]
+        F3["StudentInteraction Saved"]
+        F4["Resource helpful/not_helpful counts updated"]
+        F5["Resource ml_score recalculated"]
+        F6["Future search ranking improves"]
+        F7["Student Clicks Save Topic"]
+        F8["POST /bookmark/"]
+        F9["Bookmark stored in session + StudentInteraction"]
+        F1 --> F2 --> F3 --> F4 --> F5 --> F6
+        F7 --> F8 --> F9
+    end
+
+    subgraph CHAT["6. AI Chat Workflow"]
+        G1["Student Opens AI Chat Panel"]
+        G2["Student Asks Academic Question"]
+        G3["POST /api/chat/"]
+        G4["ai_chat view"]
+        G5["Build Academic System Prompt"]
+        G6["Send Request to Anthropic Claude API"]
+        G7["Receive AI Reply"]
+        G8["Return JSON Response"]
+        G9["Show Reply in Chat Panel"]
+        G1 --> G2 --> G3 --> G4 --> G5 --> G6 --> G7 --> G8 --> G9
+    end
+
+    subgraph ADMIN["7. Admin & Seed Data"]
+        H1["python manage.py createsuperuser"]
+        H2["Open /admin/"]
+        H3["Manage Semesters"]
+        H4["Manage Subjects"]
+        H5["Manage Topics"]
+        H6["Manage Video Resources"]
+        H7["Manage Reading Resources"]
+        H8["Manage Student Interactions"]
+        H9["python manage.py seed_data"]
+        H10["Loads 6 semesters, 8 subjects, 20 topics, 120 resources"]
+        H1 --> H2
+        H2 --> H3
+        H2 --> H4
+        H2 --> H5
+        H2 --> H6
+        H2 --> H7
+        H2 --> H8
+        H9 --> H10
+    end
+
+    subgraph OUTPUT["8. Final Output to Student"]
+        I1["Homepage"]
+        I2["Search Results Page"]
+        I3["Top 3 Videos"]
+        I4["Top 3 Reading Resources"]
+        I5["Average Study Time"]
+        I6["Related Topics"]
+        I7["Bookmark / Feedback / AI Chat"]
+        I1 --> I2
+        I2 --> I3
+        I2 --> I4
+        I2 --> I5
+        I2 --> I6
+        I2 --> I7
+    end
+
+    B8 --> C1
+    D5 --> E1
+    E12 --> D6
+    E7 --> SCORE
+    D7 --> OUTPUT
+    F6 --> E8
+    F9 --> I7
+    H10 --> E1

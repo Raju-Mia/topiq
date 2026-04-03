@@ -1,248 +1,118 @@
+{% extends 'website/base.html' %}
 {% load static %}
-<!DOCTYPE html>
-<html lang="en">
-<head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Topiq — Smart Study Resource Finder</title>
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=Sora:wght@300;400;500;600;700&family=DM+Serif+Display&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="{% static 'website/css/style.css' %}">
-</head>
-<body>
 
-<!-- ══ HEADER ══ -->
-<header>
-  <div class="header-inner">
-    <a href="#" class="logo">
-      <div class="logo-mark">
-        <svg viewBox="0 0 24 24"><path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/></svg>
+{% block title %}Topiq — Smart Study Resource Finder{% endblock %}
+
+{% block content %}
+<section class="hero-section">
+  <div class="container hero">
+    <div class="hero-badge">★ Smart Resource Finder for University Students</div>
+    <h1>Find the <em>Best Resources</em><br>for Any Topic, Instantly</h1>
+    <p>No more searching across YouTube, blogs, notes, and PDFs separately. Topiq helps you reach the best study material in one clean flow.</p>
+
+    <form method="GET" action="{% url 'website:search_results' %}" class="hero-search-card">
+      {% csrf_token %}
+      <div class="hero-search-row">
+        <input
+          type="text"
+          name="q"
+          value=""
+          placeholder="Search your study topic… e.g. Deadlock, Binary Tree"
+          aria-label="Search your study topic"
+        >
+        <button type="submit" class="search-btn large">Search Now</button>
       </div>
-      <span class="logo-text">Top<span>iq</span></span>
-    </a>
-
-    <div class="search-wrap">
-      <svg class="search-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
-      <input type="text" placeholder="Search your study topic… e.g. Deadlock, Binary Tree" value="Operating System – Deadlock">
-      <button class="search-btn">Search</button>
-    </div>
-
-    <button class="ai-btn" type="button" data-chat-toggle title="AI Study Assistant">
-      <svg viewBox="0 0 24 24"><path d="M12 2a2 2 0 012 2c0 .74-.4 1.39-1 1.73V7h1a7 7 0 017 7h1a1 1 0 010 2h-1v1a2 2 0 01-2 2H5a2 2 0 01-2-2v-1H2a1 1 0 010-2h1a7 7 0 017-7h1V5.73c-.6-.34-1-.99-1-1.73a2 2 0 012-2zM9 9a5 5 0 000 10h6a5 5 0 000-10H9zm1 4h4a1 1 0 010 2h-4a1 1 0 010-2z"/></svg>
-      <span class="ai-badge"></span>
-    </button>
+    </form>
   </div>
-</header>
+</section>
 
-<!-- ══ HERO ══ -->
-<div class="hero">
-  <div class="hero-badge">
-    <svg width="13" height="13" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
-    Smart Resource Finder for University Students
-  </div>
-  <h1>Find the <em>Best Resources</em><br>for Any Topic, Instantly</h1>
-  <p>No more searching across YouTube, blogs & PDFs separately. Get the top 3 curated resources for any academic topic in seconds.</p>
-</div>
-
-<!-- ══ STATS ══ -->
-<div class="container">
+<section class="container">
   <div class="stats-bar">
-    <div class="stat-chip"><span class="dot"></span> Showing results for: <strong>Operating System – Deadlock</strong></div>
-    <div class="stat-chip">📚 <strong>6</strong> resources found</div>
-    <div class="stat-chip">⏱ Avg. study time: <strong>2.5 hrs</strong></div>
-    <div class="stat-chip">📌 Semester: <strong>5th</strong></div>
+    <div class="stat-chip">📚 <strong>{{ total_resources }}+</strong> Resources Available</div>
+    <div class="stat-chip">🎯 Topic-Based Smart Search</div>
+    <div class="stat-chip">🤖 AI Study Assistant</div>
   </div>
+</section>
 
-  <!-- ══ MAIN GRID ══ -->
-  <div class="results-grid">
-
-    <!-- ── LEFT: Videos ── -->
-    <div>
-      <div class="section-header">
-        <div class="section-icon red">
-          <svg viewBox="0 0 24 24" fill="#DC2626"><path d="M23 7s-.3-2-1.2-2.8c-1.1-1.2-2.4-1.2-3-1.3C15.9 2.8 12 2.8 12 2.8s-3.9 0-6.8.1C4.6 3 3.3 3 2.2 4.2 1.3 5 1 7 1 7S.7 9.3.7 11.6v2.2C.7 16.1 1 18.4 1 18.4s.3 2 1.2 2.8C3.3 22.4 4.8 22.3 5.5 22.4c2.3.2 9.5.3 9.5.3s3.9 0 6.8-.2c.6-.1 1.9-.1 3-1.3.9-.8 1.2-2.8 1.2-2.8S27 16.1 27 13.8v-2.2C23.3 9.3 23 7 23 7zM9.7 15.5v-7l6.6 3.5-6.6 3.5z"/></svg>
-        </div>
-        <div>
-          <div class="section-title">Top 3 Video Suggestions</div>
-        </div>
-        <div class="section-count">3 videos</div>
-      </div>
-
-      <!-- Video 1 -->
-      <div class="video-card">
-        <div class="video-thumb">
-          <span class="diff-badge beginner">Beginner</span>
-          <div class="play-btn">
-            <svg viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>
-          </div>
-          <span class="duration-badge">18:42</span>
-        </div>
-        <div class="video-body">
-          <div class="video-title">Deadlock in Operating System – Full Explanation</div>
-          <div class="video-desc">Covers all four necessary conditions of deadlock, with easy visual diagrams and real-world examples to help you understand from scratch.</div>
-          <a href="#" class="yt-btn" target="_blank">
-            <svg viewBox="0 0 24 24"><path d="M23 7s-.3-2-1.2-2.8c-1.1-1.2-2.4-1.2-3-1.3C15.9 2.8 12 2.8 12 2.8s-3.9 0-6.8.1C4.6 3 3.3 3 2.2 4.2 1.3 5 1 7 1 7S.7 9.3.7 11.6v2.2C.7 16.1 1 18.4 1 18.4s.3 2 1.2 2.8C3.3 22.4 4.8 22.3 5.5 22.4c2.3.2 9.5.3 9.5.3s3.9 0 6.8-.2c.6-.1 1.9-.1 3-1.3.9-.8 1.2-2.8 1.2-2.8S27 16.1 27 13.8v-2.2C23.3 9.3 23 7 23 7zM9.7 15.5v-7l6.6 3.5-6.6 3.5z"/></svg>
-            Open on YouTube
-          </a>
-        </div>
-      </div>
-
-      <!-- Video 2 -->
-      <div class="video-card">
-        <div class="video-thumb">
-          <span class="diff-badge intermediate">Intermediate</span>
-          <div class="play-btn">
-            <svg viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>
-          </div>
-          <span class="duration-badge">24:10</span>
-        </div>
-        <div class="video-body">
-          <div class="video-title">Banker's Algorithm for Deadlock Avoidance – Step by Step</div>
-          <div class="video-desc">Detailed walkthrough of Banker's Algorithm with numerical examples. Perfect for exam-oriented practice and understanding resource allocation.</div>
-          <a href="#" class="yt-btn" target="_blank">
-            <svg viewBox="0 0 24 24"><path d="M23 7s-.3-2-1.2-2.8c-1.1-1.2-2.4-1.2-3-1.3C15.9 2.8 12 2.8 12 2.8s-3.9 0-6.8.1C4.6 3 3.3 3 2.2 4.2 1.3 5 1 7 1 7S.7 9.3.7 11.6v2.2C.7 16.1 1 18.4 1 18.4s.3 2 1.2 2.8C3.3 22.4 4.8 22.3 5.5 22.4c2.3.2 9.5.3 9.5.3s3.9 0 6.8-.2c.6-.1 1.9-.1 3-1.3.9-.8 1.2-2.8 1.2-2.8S27 16.1 27 13.8v-2.2C23.3 9.3 23 7 23 7zM9.7 15.5v-7l6.6 3.5-6.6 3.5z"/></svg>
-            Open on YouTube
-          </a>
-        </div>
-      </div>
-
-      <!-- Video 3 -->
-      <div class="video-card">
-        <div class="video-thumb">
-          <span class="diff-badge advanced">Advanced</span>
-          <div class="play-btn">
-            <svg viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>
-          </div>
-          <span class="duration-badge">31:55</span>
-        </div>
-        <div class="video-body">
-          <div class="video-title">Deadlock Detection & Recovery – OS Concepts (Gate Exam Level)</div>
-          <div class="video-desc">Advanced lecture covering detection algorithms, recovery strategies, and common university exam questions on deadlock scenarios.</div>
-          <a href="#" class="yt-btn" target="_blank">
-            <svg viewBox="0 0 24 24"><path d="M23 7s-.3-2-1.2-2.8c-1.1-1.2-2.4-1.2-3-1.3C15.9 2.8 12 2.8 12 2.8s-3.9 0-6.8.1C4.6 3 3.3 3 2.2 4.2 1.3 5 1 7 1 7S.7 9.3.7 11.6v2.2C.7 16.1 1 18.4 1 18.4s.3 2 1.2 2.8C3.3 22.4 4.8 22.3 5.5 22.4c2.3.2 9.5.3 9.5.3s3.9 0 6.8-.2c.6-.1 1.9-.1 3-1.3.9-.8 1.2-2.8 1.2-2.8S27 16.1 27 13.8v-2.2C23.3 9.3 23 7 23 7zM9.7 15.5v-7l6.6 3.5-6.6 3.5z"/></svg>
-            Open on YouTube
-          </a>
-        </div>
-      </div>
-    </div>
-
-    <!-- ── RIGHT: Articles ── -->
-    <div>
-      <div class="section-header">
-        <div class="section-icon blue">
-          <svg viewBox="0 0 24 24" fill="#1E88E5"><path d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-5 14H7v-2h7v2zm3-4H7v-2h10v2zm0-4H7V7h10v2z"/></svg>
-        </div>
-        <div>
-          <div class="section-title">Articles &amp; Blogs</div>
-        </div>
-        <div class="section-count">3 articles</div>
-      </div>
-
-      <!-- Article 1: PDF -->
-      <div class="article-card">
-        <div class="article-icon pdf">
-          <svg viewBox="0 0 24 24" fill="#DC2626"><path d="M20 2H8c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2zm-8.5 7.5c0 .83-.67 1.5-1.5 1.5H9v2H7.5V7H10c.83 0 1.5.67 1.5 1.5v1zm5 2c0 .83-.67 1.5-1.5 1.5h-2.5V7H15c.83 0 1.5.67 1.5 1.5v3zm4-3H19v1h1.5V11H19v2h-1.5V7h3v1.5zM9 9.5h1v-1H9v1zM4 6H2v14c0 1.1.9 2 2 2h14v-2H4V6zm10 5.5h1v-3h-1v3z"/></svg>
-        </div>
-        <div class="article-content">
-          <div class="article-type type-pdf">PDF Textbook</div>
-          <div class="article-title">Operating System Concepts – Deadlock Chapter (Silberschatz)</div>
-          <div class="article-desc">The classic OS textbook chapter covering deadlock characterization, prevention, avoidance and detection with detailed examples and exercises.</div>
-          <a href="#" class="read-link" target="_blank">
-            Read Article
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
-          </a>
-        </div>
-      </div>
-
-      <!-- Article 2: Blog -->
-      <div class="article-card">
-        <div class="article-icon blog">
-          <svg viewBox="0 0 24 24" fill="#7C3AED"><path d="M12 22C6.48 22 2 17.52 2 12S6.48 2 12 2s10 4.48 10 10-4.48 10-10 10zm1-11V7h-2v4H7v2h4v4h2v-4h4v-2h-4z"/></svg>
-        </div>
-        <div class="article-content">
-          <div class="article-type type-blog">Blog Article</div>
-          <div class="article-title">Understanding Deadlock: Conditions, Prevention & Avoidance Explained</div>
-          <div class="article-desc">A well-illustrated blog post breaking down all deadlock conditions with diagrams, code snippets and practical interview questions for CS students.</div>
-          <a href="#" class="read-link" target="_blank">
-            Read Article
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
-          </a>
-        </div>
-      </div>
-
-      <!-- Article 3: Notes -->
-      <div class="article-card">
-        <div class="article-icon note">
-          <svg viewBox="0 0 24 24" fill="#059669"><path d="M9 21c0 .55.45 1 1 1h4c.55 0 1-.45 1-1v-1H9v1zm3-19C8.14 2 5 5.14 5 9c0 2.38 1.19 4.47 3 5.74V17c0 .55.45 1 1 1h6c.55 0 1-.45 1-1v-2.26c1.81-1.27 3-3.36 3-5.74 0-3.86-3.14-7-7-7z"/></svg>
-        </div>
-        <div class="article-content">
-          <div class="article-type type-note">Study Notes</div>
-          <div class="article-title">Deadlock – Short Notes &amp; Formula Sheet for Exam Prep</div>
-          <div class="article-desc">Concise, exam-ready notes covering all key concepts, Banker's algorithm steps, and important definitions. Ideal for last-minute revision before exams.</div>
-          <a href="#" class="read-link" target="_blank">
-            Read Article
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
-          </a>
-        </div>
-      </div>
-    </div>
-
-  </div>
-</div>
-
-<!-- ══ AI CHAT PANEL ══ -->
-<div class="chat-overlay" id="chatOverlay" data-chat-toggle></div>
-<div class="chat-panel" id="chatPanel">
-  <div class="chat-header">
-    <div class="chat-avatar">
-      <svg viewBox="0 0 24 24"><path d="M12 2a2 2 0 012 2c0 .74-.4 1.39-1 1.73V7h1a7 7 0 017 7h1a1 1 0 010 2h-1v1a2 2 0 01-2 2H5a2 2 0 01-2-2v-1H2a1 1 0 010-2h1a7 7 0 017-7h1V5.73c-.6-.34-1-.99-1-1.73a2 2 0 012-2z"/></svg>
-    </div>
-    <div class="chat-header-info">
-      <h3>AI Study Assistant</h3>
-      <p>University Level Only • Powered by Topiq AI</p>
-    </div>
-    <button class="chat-close" type="button" data-chat-toggle>
-      <svg viewBox="0 0 24 24"><line x1="18" y1="6" x2="6" y2="18" stroke="white" stroke-width="2"/><line x1="6" y1="6" x2="18" y2="18" stroke="white" stroke-width="2"/></svg>
-    </button>
-  </div>
-
-  <div class="chat-messages" id="chatMessages">
-    <div class="msg ai">
-      <div class="msg-avatar">AI</div>
-      <div class="msg-bubble">Hello! 👋 I'm your AI Study Assistant. Ask me any university-level academic question — I'll help you understand topics, explain concepts, and guide your learning!</div>
-    </div>
-    <div class="msg user">
-      <div class="msg-avatar">U</div>
-      <div class="msg-bubble">Can you explain the four necessary conditions for deadlock?</div>
-    </div>
-    <div class="msg ai">
-      <div class="msg-avatar">AI</div>
-      <div class="msg-bubble">
-        Great question! The four necessary conditions for deadlock (known as the <strong>Coffman Conditions</strong>) are:<br><br>
-        1. <strong>Mutual Exclusion</strong> – Resources can't be shared simultaneously<br>
-        2. <strong>Hold & Wait</strong> – A process holds a resource while waiting for others<br>
-        3. <strong>No Preemption</strong> – Resources can't be forcibly taken<br>
-        4. <strong>Circular Wait</strong> – A circular chain of processes waiting on each other<br><br>
-        All four must hold simultaneously for deadlock to occur. Would you like examples? 🎯
-      </div>
-    </div>
-    <div class="msg ai">
-      <div class="msg-avatar">AI</div>
-      <div class="msg-bubble typing"><span></span><span></span><span></span></div>
+<section class="container home-section">
+  {% if semesters %}
+  <div class="semester-filter">
+    <span>Filter by Semester:</span>
+    <div class="chip-row">
+      {% for semester in semesters %}
+      <a href="{% url 'website:search_results' %}?semester={{ semester.id }}" class="semester-chip">
+        {{ semester.name }}
+      </a>
+      {% endfor %}
     </div>
   </div>
+  {% endif %}
 
-  <div class="chat-disclaimer">⚠️ This assistant answers academic questions only</div>
-
-  <div class="chat-input-row">
-    <input type="text" placeholder="Ask a university-level question…" id="chatInput">
-    <button class="send-btn" type="button" data-send-message>
-      <svg viewBox="0 0 24 24"><path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z"/></svg>
-    </button>
+  {% if recent_searches %}
+  <div class="recent-searches">
+    <span>Recent:</span>
+    <div class="chip-row">
+      {% for search in recent_searches %}
+      <a href="{% url 'website:search_results' %}?q={{ search|urlencode }}" class="recent-chip">{{ search }}</a>
+      {% endfor %}
+    </div>
   </div>
-</div>
+  {% endif %}
+</section>
 
-<script src="{% static 'website/js/main.js' %}"></script>
+<section class="container home-section">
+  <div class="section-intro">
+    <span class="eyebrow">How It Works</span>
+    <h2>Study faster with a cleaner search flow</h2>
+    <p>Topiq keeps the process simple: search once, compare the best resources, and spend your time learning instead of filtering through noise.</p>
+  </div>
 
-</body>
-</html>
+  <div class="feature-grid steps-grid">
+    <article class="feature-card">
+      <div class="feature-icon">1</div>
+      <h3>Search a Topic</h3>
+      <p>Enter any university topic name, keyword, or concept you are currently studying.</p>
+    </article>
+    <article class="feature-card">
+      <div class="feature-icon">2</div>
+      <h3>Get Top 3 Resources</h3>
+      <p>Topiq ranks strong video and reading resources instantly using the recommendation engine.</p>
+    </article>
+    <article class="feature-card">
+      <div class="feature-icon">3</div>
+      <h3>Learn Efficiently</h3>
+      <p>Focus on fewer, better materials instead of opening ten tabs and comparing everything manually.</p>
+    </article>
+  </div>
+</section>
+
+<section class="container home-section">
+  <div class="section-intro">
+    <span class="eyebrow">Why Students Use Topiq</span>
+    <h2>Built for focused, university-level learning</h2>
+  </div>
+
+  <div class="feature-grid">
+    <article class="feature-card">
+      <div class="feature-icon accent-red">▶</div>
+      <h3>Video + Reading Together</h3>
+      <p>See both quick explanatory videos and deeper written resources in one organized results page.</p>
+    </article>
+    <article class="feature-card">
+      <div class="feature-icon accent-blue">◎</div>
+      <h3>Topic-Aware Search</h3>
+      <p>The recommender matches topic names, tags, and related search phrases to reduce missed results.</p>
+    </article>
+    <article class="feature-card">
+      <div class="feature-icon accent-green">✓</div>
+      <h3>Helpful Feedback Loop</h3>
+      <p>Student feedback helps push better resources upward over time and improves recommendation quality.</p>
+    </article>
+    <article class="feature-card">
+      <div class="feature-icon accent-purple">AI</div>
+      <h3>Ask Follow-Up Questions</h3>
+      <p>Use the AI assistant for short academic explanations while staying inside the same study flow.</p>
+    </article>
+  </div>
+</section>
+{% endblock %}
