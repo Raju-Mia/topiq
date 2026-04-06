@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
+from urllib.parse import quote_plus
 
 from django.core.management.base import BaseCommand
 from django.db import transaction
@@ -221,7 +222,6 @@ class ResourcePreset:
 
     suffix: str
     description: str
-    resource_url: str
     duration: str
     duration_seconds: int
     difficulty_level: str
@@ -235,7 +235,6 @@ VIDEO_PRESETS = [
     ResourcePreset(
         suffix="Full Explanation",
         description="Beginner-friendly walkthrough covering the core ideas, key terminology, and simple examples for strong conceptual understanding.",
-        resource_url="https://www.youtube.com/watch?v={code}A1",
         duration="18:42",
         duration_seconds=1122,
         difficulty_level="beginner",
@@ -247,7 +246,6 @@ VIDEO_PRESETS = [
     ResourcePreset(
         suffix="Step by Step Problem Solving",
         description="Intermediate lesson focused on worked examples, exam patterns, and practical reasoning strategies students can apply quickly.",
-        resource_url="https://www.youtube.com/watch?v={code}B2",
         duration="24:10",
         duration_seconds=1450,
         difficulty_level="intermediate",
@@ -259,7 +257,6 @@ VIDEO_PRESETS = [
     ResourcePreset(
         suffix="Advanced Concepts and Exam Practice",
         description="Advanced treatment of the topic with deeper explanations, tricky cases, and university exam-style problem analysis.",
-        resource_url="https://www.youtube.com/watch?v={code}C3",
         duration="31:55",
         duration_seconds=1915,
         difficulty_level="advanced",
@@ -305,6 +302,11 @@ READING_PRESETS = [
         "not_helpful": 9,
     },
 ]
+
+
+def build_youtube_search_url(query: str) -> str:
+    """Return a stable YouTube search URL for demo resource links."""
+    return f"https://www.youtube.com/results?search_query={quote_plus(query)}"
 
 
 class Command(BaseCommand):
@@ -425,14 +427,12 @@ class Command(BaseCommand):
         return {"created": created}
 
     def _seed_video_resources(self, topic_data: list[dict]) -> dict[str, int]:
-        """Insert three video resources per topic using a consistent quality pattern."""
+        """Insert or refresh three video resources per topic using working YouTube search links."""
         topic_map = {topic.name: topic for topic in Topic.objects.select_related("subject")}
-        existing_keys = set(VideoResource.objects.values_list("topic__name", "title"))
-        to_create = []
+        created = 0
 
         for index, topic_item in enumerate(topic_data, start=1):
             topic = topic_map[topic_item["name"]]
-            short_code = f"{slugify(topic.name).replace('-', '')[:8]}{index:02d}"
             subject_label = topic.subject.name
 
             for preset in VIDEO_PRESETS:
@@ -445,37 +445,41 @@ class Command(BaseCommand):
                     }
                     title = deadlock_titles[preset.difficulty_level]
 
-                key = (topic.name, title)
-                if key in existing_keys:
-                    continue
-
-                to_create.append(
-                    VideoResource(
-                        topic=topic,
-                        title=title,
-                        description=f"{topic_item['description']} {preset.description}",
-                        youtube_url=preset.resource_url.format(code=short_code),
-                        duration=preset.duration,
-                        duration_seconds=preset.duration_seconds + (index * 7),
-                        difficulty_level=preset.difficulty_level,
-                        view_count=preset.view_count + (index * 1300),
-                        rating=max(4.0, round(preset.rating - (index % 3) * 0.05, 1)),
-                        student_helpful_count=preset.helpful + index,
-                        student_not_helpful_count=preset.not_helpful + (index % 4),
-                        is_active=True,
-                    )
+                search_query = " ".join(
+                    [
+                        topic.name,
+                        subject_label,
+                        preset.difficulty_level,
+                        "tutorial",
+                        "for students",
+                    ]
                 )
+                _, was_created = VideoResource.objects.update_or_create(
+                    topic=topic,
+                    title=title,
+                    defaults={
+                        "description": f"{topic_item['description']} {preset.description}",
+                        "youtube_url": build_youtube_search_url(search_query),
+                        "duration": preset.duration,
+                        "duration_seconds": preset.duration_seconds + (index * 7),
+                        "difficulty_level": preset.difficulty_level,
+                        "view_count": preset.view_count + (index * 1300),
+                        "rating": max(4.0, round(preset.rating - (index % 3) * 0.05, 1)),
+                        "student_helpful_count": preset.helpful + index,
+                        "student_not_helpful_count": preset.not_helpful + (index % 4),
+                        "is_active": True,
+                    },
+                )
+                if was_created:
+                    created += 1
 
-        if to_create:
-            VideoResource.objects.bulk_create(to_create)
         self.stdout.write(self.style.SUCCESS(f"Video resources processed: {len(topic_data) * 3}"))
-        return {"created": len(to_create)}
+        return {"created": created}
 
     def _seed_reading_resources(self, topic_data: list[dict]) -> dict[str, int]:
-        """Insert PDF, blog, and notes reading resources for each topic."""
+        """Insert or refresh PDF, blog, and notes reading resources for each topic."""
         topic_map = {topic.name: topic for topic in Topic.objects.select_related("subject")}
-        existing_keys = set(ReadingResource.objects.values_list("topic__name", "title"))
-        to_create = []
+        created = 0
 
         for index, topic_item in enumerate(topic_data, start=1):
             topic = topic_map[topic_item["name"]]
@@ -491,30 +495,26 @@ class Command(BaseCommand):
                     }
                     title = deadlock_titles[preset["resource_type"]]
 
-                key = (topic.name, title)
-                if key in existing_keys:
-                    continue
-
-                to_create.append(
-                    ReadingResource(
-                        topic=topic,
-                        title=title,
-                        description=f"{topic_item['description']} {preset['description']}",
-                        url=preset["url"].format(slug=slug),
-                        resource_type=preset["resource_type"],
-                        source_name=preset["source_name"],
-                        rating=max(4.0, round(preset["rating"] - (index % 3) * 0.05, 1)),
-                        view_count=preset["view_count"] + (index * 900),
-                        student_helpful_count=preset["helpful"] + index,
-                        student_not_helpful_count=preset["not_helpful"] + (index % 5),
-                        is_active=True,
-                    )
+                _, was_created = ReadingResource.objects.update_or_create(
+                    topic=topic,
+                    title=title,
+                    defaults={
+                        "description": f"{topic_item['description']} {preset['description']}",
+                        "url": preset["url"].format(slug=slug),
+                        "resource_type": preset["resource_type"],
+                        "source_name": preset["source_name"],
+                        "rating": max(4.0, round(preset["rating"] - (index % 3) * 0.05, 1)),
+                        "view_count": preset["view_count"] + (index * 900),
+                        "student_helpful_count": preset["helpful"] + index,
+                        "student_not_helpful_count": preset["not_helpful"] + (index % 5),
+                        "is_active": True,
+                    },
                 )
+                if was_created:
+                    created += 1
 
-        if to_create:
-            ReadingResource.objects.bulk_create(to_create)
         self.stdout.write(self.style.SUCCESS(f"Reading resources processed: {len(topic_data) * 3}"))
-        return {"created": len(to_create)}
+        return {"created": created}
 
     def _recalculate_scores(self):
         """Refresh machine-learning scores after all records are present."""

@@ -3,8 +3,9 @@
 from __future__ import annotations
 
 import json
-from unittest.mock import patch
+from unittest.mock import Mock, patch
 
+import requests
 from django.core.management import call_command
 from django.test import Client, TestCase
 
@@ -166,6 +167,7 @@ class TestViews(BaseTopiqTestCase):
         response = self.client.get("/search/?q=deadlock")
         self.assertEqual(response.status_code, 200)
         self.assertContains(response, "Deadlock")
+        self.assertContains(response, "Open on YouTube")
 
     def test_search_with_empty_query_redirects(self):
         """Empty search should redirect back to the homepage."""
@@ -224,7 +226,7 @@ class TestViews(BaseTopiqTestCase):
 
     def test_ai_chat_without_api_key_returns_fallback(self):
         """AI chat should return a safe fallback reply when no API key exists."""
-        with patch.dict("os.environ", {"ANTHROPIC_API_KEY": ""}, clear=False):
+        with patch.dict("os.environ", {"AI_PROVIDER": "groq", "GROQ_API_KEY": "", "ANTHROPIC_API_KEY": ""}, clear=False):
             response = self.client.post(
                 "/api/chat/",
                 data=json.dumps({"message": "Explain deadlock", "topic_context": "Deadlock"}),
@@ -235,6 +237,141 @@ class TestViews(BaseTopiqTestCase):
         data = response.json()
         self.assertIn("reply", data)
         self.assertEqual(data["status"], "error")
+
+    @patch("website.views.requests.post")
+    def test_ai_chat_uses_groq_by_default_when_key_exists(self, mock_post):
+        """AI chat should default to Groq when a Groq key is configured."""
+        mock_response = Mock()
+        mock_response.raise_for_status.return_value = None
+        mock_response.json.return_value = {
+            "choices": [{"message": {"content": "Python programming is the process of writing instructions in Python."}}]
+        }
+        mock_post.return_value = mock_response
+
+        with patch.dict(
+            "os.environ",
+            {"GROQ_API_KEY": "test-groq-key", "GROQ_MODEL": "llama-3.1-8b-instant", "ANTHROPIC_API_KEY": ""},
+            clear=False,
+        ):
+            response = self.client.post(
+                "/api/chat/",
+                data=json.dumps({"message": "Explain python programming", "topic_context": "Python"}),
+                content_type="application/json",
+            )
+
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.json()["status"], "ok")
+        self.assertEqual(
+            mock_post.call_args.kwargs["json"]["model"],
+            "llama-3.1-8b-instant",
+        )
+        self.assertEqual(
+            mock_post.call_args.args[0],
+            "https://api.groq.com/openai/v1/chat/completions",
+        )
+
+    @patch("website.views.requests.post")
+    def test_ai_chat_uses_configurable_anthropic_model(self, mock_post):
+        """AI chat should use the configured Anthropic model alias."""
+        mock_response = Mock()
+        mock_response.raise_for_status.return_value = None
+        mock_response.json.return_value = {"content": [{"text": "Python is a programming language."}]}
+        mock_post.return_value = mock_response
+
+        with patch.dict(
+            "os.environ",
+            {
+                "AI_PROVIDER": "anthropic",
+                "ANTHROPIC_API_KEY": "test-key",
+                "ANTHROPIC_MODEL": "claude-3-5-haiku-latest",
+                "GROQ_API_KEY": "",
+            },
+            clear=False,
+        ):
+            response = self.client.post(
+                "/api/chat/",
+                data=json.dumps({"message": "Explain python programming", "topic_context": "Python"}),
+                content_type="application/json",
+            )
+
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.json()["status"], "ok")
+        self.assertEqual(mock_post.call_args.kwargs["json"]["model"], "claude-3-5-haiku-latest")
+
+    @patch("website.views.requests.post")
+    def test_ai_chat_returns_model_hint_on_bad_request(self, mock_post):
+        """AI chat should show a helpful message when Anthropic rejects the model."""
+        mock_response = Mock()
+        mock_response.text = '{"error":{"message":"model not found"}}'
+        mock_response.json.return_value = {"error": {"message": "model not found"}}
+        error = requests.exceptions.HTTPError("400 Client Error", response=mock_response)
+        mock_response.raise_for_status.side_effect = error
+        mock_post.return_value = mock_response
+
+        with patch.dict(
+            "os.environ",
+            {"AI_PROVIDER": "anthropic", "ANTHROPIC_API_KEY": "test-key", "GROQ_API_KEY": ""},
+            clear=False,
+        ):
+            response = self.client.post(
+                "/api/chat/",
+                data=json.dumps({"message": "Explain python programming", "topic_context": "Python"}),
+                content_type="application/json",
+            )
+
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.json()["status"], "error")
+        self.assertIn("ANTHROPIC_MODEL", response.json()["reply"])
+
+    @patch("website.views.requests.post")
+    def test_ai_chat_returns_groq_key_hint_on_auth_error(self, mock_post):
+        """AI chat should show a Groq-specific key hint on auth failures."""
+        mock_response = Mock()
+        mock_response.text = '{"error":{"message":"Unauthorized"}}'
+        mock_response.json.return_value = {"error": {"message": "Unauthorized"}}
+        error = requests.exceptions.HTTPError("401 Unauthorized", response=mock_response)
+        mock_response.raise_for_status.side_effect = error
+        mock_post.return_value = mock_response
+
+        with patch.dict("os.environ", {"AI_PROVIDER": "groq", "GROQ_API_KEY": "test-key"}, clear=False):
+            response = self.client.post(
+                "/api/chat/",
+                data=json.dumps({"message": "Explain python programming", "topic_context": "Python"}),
+                content_type="application/json",
+            )
+
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.json()["status"], "error")
+        self.assertIn("GROQ_API_KEY", response.json()["reply"])
+
+    @patch("website.views.requests.post")
+    def test_ai_chat_returns_credit_message_when_balance_is_low(self, mock_post):
+        """AI chat should explain when Anthropic billing credits are exhausted."""
+        mock_response = Mock()
+        mock_response.text = '{"error":{"message":"Your credit balance is too low to access the Anthropic API. Please go to Plans & Billing to upgrade or purchase credits."}}'
+        mock_response.json.return_value = {
+            "error": {
+                "message": "Your credit balance is too low to access the Anthropic API. Please go to Plans & Billing to upgrade or purchase credits."
+            }
+        }
+        error = requests.exceptions.HTTPError("400 Client Error", response=mock_response)
+        mock_response.raise_for_status.side_effect = error
+        mock_post.return_value = mock_response
+
+        with patch.dict(
+            "os.environ",
+            {"AI_PROVIDER": "anthropic", "ANTHROPIC_API_KEY": "test-key", "GROQ_API_KEY": ""},
+            clear=False,
+        ):
+            response = self.client.post(
+                "/api/chat/",
+                data=json.dumps({"message": "Explain python programming", "topic_context": "Python"}),
+                content_type="application/json",
+            )
+
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.json()["status"], "error")
+        self.assertIn("credits are exhausted", response.json()["reply"])
 
 
 class TestRecommender(BaseTopiqTestCase):
@@ -294,3 +431,11 @@ class TestManagementCommand(TestCase):
         self.assertGreaterEqual(Topic.objects.count(), 6)
         self.assertGreaterEqual(VideoResource.objects.count(), 18)
         self.assertGreaterEqual(ReadingResource.objects.count(), 18)
+
+    def test_seed_data_uses_working_youtube_search_links(self):
+        """Seeded demo video records should use safe YouTube search URLs."""
+        call_command("seed_data", "--flush", "--demo")
+        video = VideoResource.objects.first()
+        self.assertIsNotNone(video)
+        self.assertIn("youtube.com/results?search_query=", video.youtube_url)
+        self.assertIsNone(video.youtube_video_id)

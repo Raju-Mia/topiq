@@ -34,7 +34,7 @@ function initSearch() {
   });
 
   if (document.body.dataset.pageTitle.includes("Results")) {
-    const resultsSearchInput = document.querySelector('.header-search input[name="q"]');
+    const resultsSearchInput = document.querySelector('.hero-search-row input[name="q"]');
     if (resultsSearchInput) {
       resultsSearchInput.focus();
       resultsSearchInput.setSelectionRange(resultsSearchInput.value.length, resultsSearchInput.value.length);
@@ -56,9 +56,11 @@ function initChatPanel() {
 
   toggles.forEach((toggle) => {
     toggle.addEventListener("click", () => {
+      const isOpen = panel.classList.contains("open");
       overlay.classList.toggle("open");
       panel.classList.toggle("open");
-      if (panel.classList.contains("open")) {
+      
+      if (!isOpen) {
         input.focus();
       }
     });
@@ -121,6 +123,9 @@ function initChatPanel() {
       submitMessage();
     }
   });
+
+  // Add copy buttons to messages
+  initMessageCopy();
 }
 
 /* Return the CSRF token from the browser cookie string. */
@@ -322,10 +327,53 @@ function appendMessage(role, text) {
 
   const div = document.createElement("div");
   div.className = `msg ${role}`;
-  div.innerHTML = `
-    <div class="msg-avatar">${role === "ai" ? "AI" : "U"}</div>
-    <div class="msg-bubble">${escapeHtml(text)}</div>
-  `;
+  
+  const avatar = document.createElement("div");
+  avatar.className = "msg-avatar";
+  avatar.textContent = role === "ai" ? "AI" : "U";
+  
+  const bubble = document.createElement("div");
+  bubble.className = "msg-bubble";
+  
+  // Format message with markdown-like structure
+  const formattedText = formatMessage(text);
+  bubble.innerHTML = formattedText;
+  
+  // Add copy button for AI messages
+  if (role === "ai") {
+    const copyBtn = document.createElement("button");
+    copyBtn.className = "msg-copy-btn";
+    copyBtn.innerHTML = `
+      <svg viewBox="0 0 24 24" width="14" height="14" aria-hidden="true">
+        <rect x="9" y="9" width="13" height="13" rx="2" ry="2" fill="none" stroke="currentColor" stroke-width="2"></rect>
+        <path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1" fill="none" stroke="currentColor" stroke-width="2"></path>
+      </svg>
+    `;
+    copyBtn.title = "Copy message";
+    copyBtn.addEventListener("click", () => {
+      navigator.clipboard.writeText(text).then(() => {
+        copyBtn.classList.add("copied");
+        copyBtn.innerHTML = `
+          <svg viewBox="0 0 24 24" width="14" height="14" aria-hidden="true">
+            <polyline points="20 6 9 17 4 12" fill="none" stroke="currentColor" stroke-width="2"></polyline>
+          </svg>
+        `;
+        setTimeout(() => {
+          copyBtn.classList.remove("copied");
+          copyBtn.innerHTML = `
+            <svg viewBox="0 0 24 24" width="14" height="14" aria-hidden="true">
+              <rect x="9" y="9" width="13" height="13" rx="2" ry="2" fill="none" stroke="currentColor" stroke-width="2"></rect>
+              <path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1" fill="none" stroke="currentColor" stroke-width="2"></path>
+            </svg>
+          `;
+        }, 2000);
+      });
+    });
+    bubble.appendChild(copyBtn);
+  }
+  
+  div.appendChild(avatar);
+  div.appendChild(bubble);
   messagesEl.appendChild(div);
   scrollChatToBottom();
 }
@@ -349,4 +397,32 @@ function escapeHtml(text) {
   const div = document.createElement("div");
   div.appendChild(document.createTextNode(text));
   return div.innerHTML;
+}
+
+/* Format message text with basic markdown-like structure. */
+function formatMessage(text) {
+  // Escape HTML first
+  let formatted = escapeHtml(text);
+  
+  // Convert code blocks
+  formatted = formatted.replace(/```([\s\S]*?)```/g, '<pre class="code-block">$1</pre>');
+  
+  // Convert inline code
+  formatted = formatted.replace(/`([^`]+)`/g, '<code class="inline-code">$1</code>');
+  
+  // Convert bold
+  formatted = formatted.replace(/\*\*([^*]+)\*\*/g, '<strong>$1</strong>');
+  
+  // Convert italic
+  formatted = formatted.replace(/\*([^*]+)\*/g, '<em>$1</em>');
+  
+  // Convert line breaks to <br>
+  formatted = formatted.replace(/\n/g, '<br>');
+  
+  return formatted;
+}
+
+/* Initialize copy functionality for existing messages. */
+function initMessageCopy() {
+  // This will be called when messages are loaded
 }

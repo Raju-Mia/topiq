@@ -5,6 +5,16 @@
 
 {% block content %}
 <section class="container results-page">
+  <!-- Logo for results page -->
+  <a href="{% url 'website:index' %}" class="results-logo" aria-label="Topiq home">
+    <div class="results-logo-mark">
+      <svg viewBox="0 0 24 24" aria-hidden="true">
+        <path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"></path>
+      </svg>
+    </div>
+    <span class="results-logo-text">Top<span>iq</span></span>
+  </a>
+
   {% if no_results %}
   <div class="no-results">
     <div class="no-results-icon">🔍</div>
@@ -107,7 +117,9 @@
             </button>
           </div>
 
-          <a href="{{ video.youtube_url }}" class="yt-btn" target="_blank" rel="noopener">▶ Open on YouTube</a>
+          <a href="{{ video.youtube_url }}" class="yt-btn" target="_blank" rel="noopener">
+            ▶ {% if video.youtube_video_id %}Open on YouTube{% else %}Search on YouTube{% endif %}
+          </a>
         </div>
       </article>
       {% endfor %}

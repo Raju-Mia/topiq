@@ -6,6 +6,16 @@
 {% block content %}
 <section class="hero-section">
   <div class="container hero">
+    <!-- Logo in hero -->
+    <a href="{% url 'website:index' %}" class="hero-logo" aria-label="Topiq home">
+      <div class="hero-logo-mark">
+        <svg viewBox="0 0 24 24" aria-hidden="true">
+          <path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"></path>
+        </svg>
+      </div>
+      <span class="hero-logo-text">Top<span>iq</span></span>
+    </a>
+
     <div class="hero-badge">★ Smart Resource Finder for University Students</div>
     <h1>Find the <em>Best Resources</em><br>for Any Topic, Instantly</h1>
     <p>No more searching across YouTube, blogs, notes, and PDFs separately. Topiq helps you reach the best study material in one clean flow.</p>

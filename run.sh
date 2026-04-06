@@ -30,5 +30,5 @@ echo "🌱 Checking seed data..."
 python manage.py seed_data
 
 # Start server
-echo "✅ Server starting at http://127.0.0.1:8000/"
+echo "✅ Server starting at http://127.0.0.1:8090/"
 python manage.py runserver 0.0.0.0:8090

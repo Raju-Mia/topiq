@@ -18,6 +18,9 @@ from website.models import ReadingResource, Semester, StudentInteraction, Topic,
 from website.recommender import get_all_semesters, search_topics
 
 logger = logging.getLogger(__name__)
+DEFAULT_AI_PROVIDER = "groq"
+DEFAULT_GROQ_MODEL = "llama-3.1-8b-instant"
+DEFAULT_ANTHROPIC_MODEL = "claude-3-5-haiku-latest"
 
 
 def _ensure_session_key(request) -> str:
@@ -34,6 +37,78 @@ def _get_resource(resource_type: str, resource_id: int):
     if resource_type == "reading":
         return ReadingResource.objects.select_related("topic").get(pk=resource_id)
     raise ValueError("Invalid resource type")
+
+
+def _get_ai_provider() -> str:
+    """Pick the configured AI provider, preferring Groq for local demos."""
+    provider = os.environ.get("AI_PROVIDER", "").strip().lower()
+    if provider in {"groq", "anthropic"}:
+        return provider
+    if os.environ.get("GROQ_API_KEY", "").strip():
+        return "groq"
+    if os.environ.get("ANTHROPIC_API_KEY", "").strip():
+        return "anthropic"
+    return DEFAULT_AI_PROVIDER
+
+
+def _call_groq_chat(system_prompt: str, message: str) -> str:
+    """Call Groq's chat completions API and return the text reply."""
+    api_key = os.environ.get("GROQ_API_KEY", "").strip()
+    if not api_key:
+        raise ValueError("GROQ_API_KEY is missing.")
+
+    model_name = os.environ.get("GROQ_MODEL", DEFAULT_GROQ_MODEL).strip() or DEFAULT_GROQ_MODEL
+    headers = {
+        "Content-Type": "application/json",
+        "Authorization": f"Bearer {api_key}",
+    }
+    payload = {
+        "model": model_name,
+        "max_tokens": 500,
+        "temperature": 0.3,
+        "messages": [
+            {"role": "system", "content": system_prompt},
+            {"role": "user", "content": message},
+        ],
+    }
+    response = requests.post(
+        "https://api.groq.com/openai/v1/chat/completions",
+        json=payload,
+        headers=headers,
+        timeout=30,
+    )
+    response.raise_for_status()
+    response_data = response.json()
+    return response_data.get("choices", [{}])[0].get("message", {}).get("content", "").strip()
+
+
+def _call_anthropic_chat(system_prompt: str, message: str) -> str:
+    """Call Anthropic's messages API and return the text reply."""
+    api_key = os.environ.get("ANTHROPIC_API_KEY", "").strip()
+    if not api_key:
+        raise ValueError("ANTHROPIC_API_KEY is missing.")
+
+    model_name = os.environ.get("ANTHROPIC_MODEL", DEFAULT_ANTHROPIC_MODEL).strip() or DEFAULT_ANTHROPIC_MODEL
+    headers = {
+        "Content-Type": "application/json",
+        "x-api-key": api_key,
+        "anthropic-version": "2023-06-01",
+    }
+    payload = {
+        "model": model_name,
+        "max_tokens": 500,
+        "system": system_prompt,
+        "messages": [{"role": "user", "content": message}],
+    }
+    response = requests.post(
+        "https://api.anthropic.com/v1/messages",
+        json=payload,
+        headers=headers,
+        timeout=30,
+    )
+    response.raise_for_status()
+    response_data = response.json()
+    return response_data.get("content", [{}])[0].get("text", "").strip()
 
 
 # -- VIEW: index --
@@ -201,7 +276,7 @@ def api_search(request):
 # -- VIEW: ai_chat --
 @require_POST
 def ai_chat(request):
-    """Send an academic question to Anthropic and return the AI reply."""
+    """Send an academic question to the configured LLM provider and return the reply."""
     try:
         body = json.loads(request.body or "{}")
         message = body.get("message", "").strip()
@@ -220,8 +295,17 @@ def ai_chat(request):
             "Keep answers concise, clear, and student-friendly. Use bullet points and examples when helpful."
         )
 
-        api_key = os.environ.get("ANTHROPIC_API_KEY", "")
-        if not api_key:
+        provider = _get_ai_provider()
+        if provider == "groq" and not os.environ.get("GROQ_API_KEY", "").strip():
+            logger.warning("Groq API key is missing.")
+            return JsonResponse(
+                {
+                    "status": "error",
+                    "reply": "Sorry, I am temporarily unavailable. Please add GROQ_API_KEY and try again later.",
+                },
+            )
+
+        if provider == "anthropic" and not os.environ.get("ANTHROPIC_API_KEY", "").strip():
             logger.warning("Anthropic API key is missing.")
             return JsonResponse(
                 {
@@ -230,29 +314,15 @@ def ai_chat(request):
                 },
             )
 
-        headers = {
-            "Content-Type": "application/json",
-            "x-api-key": api_key,
-            "anthropic-version": "2023-06-01",
-        }
-        payload = {
-            "model": "claude-3-haiku-20240307",
-            "max_tokens": 500,
-            "system": system_prompt,
-            "messages": [{"role": "user", "content": message}],
-        }
-        response = requests.post(
-            "https://api.anthropic.com/v1/messages",
-            json=payload,
-            headers=headers,
-            timeout=30,
-        )
-        response.raise_for_status()
-        response_data = response.json()
-        ai_reply = response_data.get("content", [{}])[0].get("text", "").strip()
+        if provider == "groq":
+            model_name = os.environ.get("GROQ_MODEL", DEFAULT_GROQ_MODEL).strip() or DEFAULT_GROQ_MODEL
+            ai_reply = _call_groq_chat(system_prompt, message)
+        else:
+            model_name = os.environ.get("ANTHROPIC_MODEL", DEFAULT_ANTHROPIC_MODEL).strip() or DEFAULT_ANTHROPIC_MODEL
+            ai_reply = _call_anthropic_chat(system_prompt, message)
 
         if not ai_reply:
-            logger.warning("Anthropic API returned an empty reply.")
+            logger.warning("%s API returned an empty reply.", provider.title())
             ai_reply = "I could not generate an answer right now. Please ask another academic question."
 
         return JsonResponse({"status": "ok", "reply": ai_reply})
@@ -260,11 +330,44 @@ def ai_chat(request):
         logger.warning("Invalid JSON payload received for AI chat.")
         return JsonResponse({"status": "error", "error": "Invalid JSON body"}, status=400)
     except requests.RequestException as exc:
-        logger.exception("Anthropic API request failed: %s", exc)
+        response = getattr(exc, "response", None)
+        error_detail = ""
+        if response is not None:
+            try:
+                error_payload = response.json()
+                error_detail = error_payload.get("error", {}).get("message", "") or response.text
+            except ValueError:
+                error_detail = response.text
+
+        logger.exception(
+            "%s API request failed for model '%s': %s | detail=%s",
+            locals().get("provider", _get_ai_provider()).title(),
+            locals().get("model_name", DEFAULT_ANTHROPIC_MODEL),
+            exc,
+            error_detail,
+        )
+
+        reply = "Sorry, I am temporarily unavailable. Please try again later."
+        if error_detail:
+            detail_lower = error_detail.lower()
+            provider = locals().get("provider", _get_ai_provider())
+            if "model" in detail_lower:
+                reply = (
+                    "AI chat is misconfigured for the current model. "
+                    f"Set {'GROQ_MODEL' if provider == 'groq' else 'ANTHROPIC_MODEL'} in .env to a model your API key can access."
+                )
+            elif "credit balance is too low" in detail_lower or "purchase credits" in detail_lower:
+                reply = f"{provider.title()} API credits are exhausted for this key. Please add billing or purchase credits."
+            elif "api key" in detail_lower or "authentication" in detail_lower or "unauthorized" in detail_lower:
+                reply = (
+                    "API key is invalid or missing permission. "
+                    f"Please check {'GROQ_API_KEY' if provider == 'groq' else 'ANTHROPIC_API_KEY'}."
+                )
+
         return JsonResponse(
             {
                 "status": "error",
-                "reply": "Sorry, I am temporarily unavailable. Please try again later.",
+                "reply": reply,
             },
         )
     except Exception as exc:  # pragma: no cover - defensive error handling.
