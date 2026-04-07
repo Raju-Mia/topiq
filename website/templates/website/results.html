@@ -19,7 +19,7 @@
   <div class="no-results">
     <div class="no-results-icon">🔍</div>
     <h2>No resources found for "{{ query }}"</h2>
-    <p>{{ result.message|default:"Try a different search term or browse by semester below." }}</p>
+    <p>{{ result.message|default:"Try a different search term." }}</p>
 
     <form method="GET" action="{% url 'website:search_results' %}" class="retry-search-card">
       {% csrf_token %}

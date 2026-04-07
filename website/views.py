@@ -152,7 +152,6 @@ def search_results(request):
     """Run the recommender for the search query and render the results page."""
     try:
         query = request.GET.get("q", "").strip()
-        semester_id = request.GET.get("semester") or None
 
         if not query:
             messages.error(request, "Please enter a study topic to search.")
@@ -162,7 +161,7 @@ def search_results(request):
             messages.error(request, "Please enter at least 2 characters")
             return redirect("website:index")
 
-        cache_key = f"search_{query.lower().replace(' ', '_')}_{semester_id or 'all'}"
+        cache_key = f"search_{query.lower().replace(' ', '_')}"
         cached_result = cache.get(cache_key)
         if cached_result:
             result = cached_result
@@ -177,21 +176,8 @@ def search_results(request):
         request.session["recent_searches"] = recent_searches[-10:]
         request.session.modified = True
 
-        if result.get("found") and semester_id:
-            matched_topic = result.get("matched_topic")
-            if matched_topic and str(matched_topic.subject.semester_id) != str(semester_id):
-                result = {
-                    **result,
-                    "found": False,
-                    "message": "No matching topic found for the selected semester.",
-                    "videos": [],
-                    "readings": [],
-                    "similar_topics": [],
-                    "total_resources": 0,
-                }
-
         bookmarked_topics = request.session.get("bookmarks", [])
-        form = SearchForm(initial={"q": query, "semester": semester_id})
+        form = SearchForm(initial={"q": query})
 
         context = {
             "form": form,
@@ -208,7 +194,6 @@ def search_results(request):
             "confidence_score": result.get("confidence_score", 0),
             "no_results": not result.get("found", False),
             "bookmarked_topics": bookmarked_topics,
-            "semesters": get_all_semesters(),
             "page_title": f"{query} – Topiq Results",
         }
         return render(request, "website/results.html", context)

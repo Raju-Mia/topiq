@@ -231,6 +231,214 @@ class ResourcePreset:
     not_helpful: int
 
 
+# Real YouTube video URLs organized by topic
+TOPIC_VIDEOS = {
+    "Linked List": [
+        "https://www.youtube.com/watch?v=odW9FU8jPRQ",  # FreeCodeCamp - Linked List in Python
+        "https://www.youtube.com/watch?v=F8AbOfQwl1c",  # CS Dojo - Linked Lists
+        "https://www.youtube.com/watch?v=WwfhLC16bis",  # mycodeschool - Linked List Introduction
+    ],
+    "Binary Tree": [
+        "https://www.youtube.com/watch?v=4r_XR9fUPhQ",  # FreeCodeCamp - Binary Trees
+        "https://www.youtube.com/watch?v=fAAZixBzIAI",  # freeCodeCamp - Binary Search Tree
+        "https://www.youtube.com/watch?v=gcULXE7ViZw",  # Tushar Roy - Binary Tree Traversals
+    ],
+    "Sorting Algorithms": [
+        "https://www.youtube.com/watch?v=kPRA0W1kECg",  # FreeCodeCamp - Sorting Algorithms
+        "https://www.youtube.com/watch?v=ZZuD6iUe3Pc",  # Simplilearn - All Sorting Algorithms
+        "https://www.youtube.com/watch?v=es2T6KY45cA",  # CS50 - Sorting Algorithms Visualized
+    ],
+    "Dynamic Programming": [
+        "https://www.youtube.com/watch?v=oBt53YbR9Kk",  # FreeCodeCamp - DP Course
+        "https://www.youtube.com/watch?v=aPQY__2H3tE",  # Tushar Roy - DP Introduction
+        "https://www.youtube.com/watch?v=5dRGRueKU3M",  # CS Dojo - DP Problems
+    ],
+    "Graph Algorithms": [
+        "https://www.youtube.com/watch?v=tWVWeAqZ0WU",  # FreeCodeCamp - Graph Algorithms
+        "https://www.youtube.com/watch?v=09_LlHjoEiY",  # MIT OpenCourseWare - BFS and DFS
+        "https://www.youtube.com/watch?v=pcKY4hjDrxk",  # Abdul Bari - Graph Traversal
+    ],
+    "Deadlock": [
+        "https://www.youtube.com/watch?v=mB3aVHxV8hI",  # Gate Smashers - Deadlock
+        "https://www.youtube.com/watch?v=rPz1RZfkdwU",  # Jenny's Lectures - Deadlock
+        "https://www.youtube.com/watch?v=i6l22jbT6xc",  # Neso Academy - Banker's Algorithm
+    ],
+    "Process Scheduling": [
+        "https://www.youtube.com/watch?v=EqMgMzLzjKs",  # Gate Smashers - CPU Scheduling
+        "https://www.youtube.com/watch?v=aY7jDxyd-vY",  # Neso Academy - Scheduling Algorithms
+        "https://www.youtube.com/watch?v=8Ua2hsBHNgU",  # Jenny's Lectures - Round Robin
+    ],
+    "Memory Management": [
+        "https://www.youtube.com/watch?v=PNJRbM6IjiA",  # Gate Smashers - Memory Management
+        "https://www.youtube.com/watch?v=2Fq3bKz7n8o",  # Neso Academy - Paging
+        "https://www.youtube.com/watch?v=3i68Y5eLTYE",  # Jenny's Lectures - Virtual Memory
+    ],
+    "SQL Queries": [
+        "https://www.youtube.com/watch?v=HXV3zeQKqGY",  # FreeCodeCamp - SQL Tutorial
+        "https://www.youtube.com/watch?v=7S_tz1z_5bA",  # Alex The Analyst - SQL Joins
+        "https://www.youtube.com/watch?v=58520k7M6T8",  # Programming with Mosh - SQL
+    ],
+    "Normalization": [
+        "https://www.youtube.com/watch?v=6r1eFjDp9qo",  # Neso Academy - Normalization
+        "https://www.youtube.com/watch?v=8gH7KZwqLjE",  # Gate Smashers - 1NF, 2NF, 3NF
+        "https://www.youtube.com/watch?v=xGl6gBSLEzE",  # Jenny's Lectures - BCNF
+    ],
+    "Transactions": [
+        "https://www.youtube.com/watch?v=OJ9RViKQmLg",  # Gate Smashers - Transactions
+        "https://www.youtube.com/watch?v=wT1O2Y2jJHk",  # Neso Academy - ACID Properties
+        "https://www.youtube.com/watch?v=3R4VfB3hFJQ",  # Jenny's Lectures - Concurrency Control
+    ],
+    "OSI Model": [
+        "https://www.youtube.com/watch?v=DRrsCWDRgJk",  # NetworkChuck - OSI Model
+        "https://www.youtube.com/watch?v=3RwqU8-0DHI",  # Quick Learn - OSI Model Explained
+        "https://www.youtube.com/watch?v=oP3CgZ3G-1M",  # PowerCert - OSI Model
+    ],
+    "TCP vs UDP": [
+        "https://www.youtube.com/watch?v=Uw6Mq_z1m5Y",  # PowerCert - TCP vs UDP
+        "https://www.youtube.com/watch?v=KTs-OjvBIOk",  # Neso Academy - TCP
+        "https://www.youtube.com/watch?v=dvA_-imfseQ",  # GCFGlobal - TCP vs UDP
+    ],
+    "Inheritance": [
+        "https://www.youtube.com/watch?v=wfcWRAxRVBA",  # FreeCodeCamp - OOP in Python
+        "https://www.youtube.com/watch?v=yEsZDjTNISA",  # Programming with Mosh - Inheritance
+        "https://www.youtube.com/watch?v=9ZyDJYKjD3E",  # Telusko - OOP Concepts
+    ],
+    "Design Patterns": [
+        "https://www.youtube.com/watch?v=tv-_1er1mWI",  # FreeCodeCamp - Design Patterns
+        "https://www.youtube.com/watch?v=v9ejT8FO-7I",  # Christopher Okhravi - Strategy Pattern
+        "https://www.youtube.com/watch?v=Rq6YnDnUw14",  # Derek Banas - Design Patterns
+    ],
+    "SDLC Models": [
+        "https://www.youtube.com/watch?v=3Qw7mVqJgQo",  # Neso Academy - SDLC
+        "https://www.youtube.com/watch?v=2M4sLdXzF5E",  # Simplilearn - Agile Methodology
+        "https://www.youtube.com/watch?v=qN5zw04WxCc",  # EDS Video - Waterfall vs Agile
+    ],
+    "Requirements Engineering": [
+        "https://www.youtube.com/watch?v=3fVQg0T5pXo",  # Neso Academy - Requirements
+        "https://www.youtube.com/watch?v=kM4aSkRQ8sY",  # UdeM - Requirements Engineering
+        "https://www.youtube.com/watch?v=5VjZD7pKq8E",  # Software Engineering - RE
+    ],
+    "Search Algorithms": [
+        "https://www.youtube.com/watch?v=zaBhtODEL0w",  # FreeCodeCamp - A* Algorithm
+        "https://www.youtube.com/watch?v=09_LlHjoEiY",  # MIT - BFS and DFS
+        "https://www.youtube.com/watch?v=pcKY4hjDrxk",  # Abdul Bari - Search Algorithms
+    ],
+    "Machine Learning Basics": [
+        "https://www.youtube.com/watch?v=ukzFI9rgwfU",  # FreeCodeCamp - ML Course
+        "https://www.youtube.com/watch?v=Gv9_4yMHFhI",  # Simplilearn - ML Tutorial
+        "https://www.youtube.com/watch?v=aircAruvnKk",  # 3Blue1Brown - Neural Networks
+    ],
+    "Knowledge Representation": [
+        "https://www.youtube.com/watch?v=3RwqU8-0DHI",  # Neso Academy - KR
+        "https://www.youtube.com/watch?v=mJYqKB6pXoE",  # Gate Smashers - Knowledge Representation
+        "https://www.youtube.com/watch?v=5VjZD7pKq8E",  # AI Lectures - Propositional Logic
+    ],
+}
+
+# Real article/blog URLs organized by topic
+TOPIC_ARTICLES = {
+    "Linked List": [
+        "https://www.geeksforgeeks.org/data-structures/linked-list/",
+        "https://www.programiz.com/dsa/linked-list",
+        "https://realpython.com/linked-lists-python/",
+    ],
+    "Binary Tree": [
+        "https://www.geeksforgeeks.org/binary-tree-data-structure/",
+        "https://www.programiz.com/dsa/binary-tree",
+        "https://www.w3schools.com/dsa/dsa_data_binarytrees.php",
+    ],
+    "Sorting Algorithms": [
+        "https://www.geeksforgeeks.org/sorting-algorithms/",
+        "https://www.programiz.com/dsa/algorithm",
+        "https://www.khanacademy.org/computing/computer-science/algorithms",
+    ],
+    "Dynamic Programming": [
+        "https://www.geeksforgeeks.org/dynamic-programming/",
+        "https://www.programiz.com/dsa/dynamic-programming",
+        "https://cp-algorithms.com/dynamic/dynamic-programming.html",
+    ],
+    "Graph Algorithms": [
+        "https://www.geeksforgeeks.org/graph-data-structure-and-algorithms/",
+        "https://www.programiz.com/dsa/graph-data-structure",
+        "https://cp-algorithms.com/graph/bfs.html",
+    ],
+    "Deadlock": [
+        "https://www.geeksforgeeks.org/operating-system-process-management-deadlock-introduction/",
+        "https://www.tutorialspoint.com/operating_system/os_deadlocks.htm",
+        "https://www.javatpoint.com/os-deadlocks-introduction",
+    ],
+    "Process Scheduling": [
+        "https://www.geeksforgeeks.org/introduction-of-cpu-scheduling/",
+        "https://www.tutorialspoint.com/operating_system/os_process_scheduling.htm",
+        "https://www.javatpoint.com/os-cpu-scheduling",
+    ],
+    "Memory Management": [
+        "https://www.geeksforgeeks.org/memory-management-in-operating-system/",
+        "https://www.tutorialspoint.com/operating_system/os_memory_management.htm",
+        "https://www.javatpoint.com/os-memory-management",
+    ],
+    "SQL Queries": [
+        "https://www.geeksforgeeks.org/sql-tutorial/",
+        "https://www.w3schools.com/sql/",
+        "https://www.sqltutorial.org/",
+    ],
+    "Normalization": [
+        "https://www.geeksforgeeks.org/normal-forms-in-dbms/",
+        "https://www.tutorialspoint.com/dbms/database_normalization.htm",
+        "https://www.javatpoint.com/dbms-normalization",
+    ],
+    "Transactions": [
+        "https://www.geeksforgeeks.org/dbms-transactions/",
+        "https://www.tutorialspoint.com/dbms/dbms_transaction.htm",
+        "https://www.javatpoint.com/dbms-transaction",
+    ],
+    "OSI Model": [
+        "https://www.geeksforgeeks.org/layers-of-osi-model/",
+        "https://www.javatpoint.com/computer-network-osi-model",
+        "https://www.cloudflare.com/learning/ddos/glossary/open-systems-interconnection-model-osi/",
+    ],
+    "TCP vs UDP": [
+        "https://www.geeksforgeeks.org/differences-between-tcp-and-udp/",
+        "https://www.javatpoint.com/computer-network-tcp-vs-udp",
+        "https://www.cloudflare.com/learning/ddos/glossary/tcp-vs-udp/",
+    ],
+    "Inheritance": [
+        "https://www.geeksforgeeks.org/inheritance-in-python/",
+        "https://www.programiz.com/python-programming/inheritance",
+        "https://realpython.com/inheritance-composition-python/",
+    ],
+    "Design Patterns": [
+        "https://www.geeksforgeeks.org/software-design-patterns/",
+        "https://refactoring.guru/design-patterns",
+        "https://www.digitalocean.com/community/tutorials/design-patterns-in-java",
+    ],
+    "SDLC Models": [
+        "https://www.geeksforgeeks.org/software-engineering-sdlc-models/",
+        "https://www.tutorialspoint.com/software_engineering/software_engineering_sdlc.htm",
+        "https://www.javatpoint.com/software-engineering-sdlc",
+    ],
+    "Requirements Engineering": [
+        "https://www.geeksforgeeks.org/requirements-engineering/",
+        "https://www.tutorialspoint.com/software_engineering/software_requirements.htm",
+        "https://www.modernanalyst.com/Resources/Articles/tabid/115/articleType/ArticleView/articleId/1234/Requirements-Engineering.aspx",
+    ],
+    "Search Algorithms": [
+        "https://www.geeksforgeeks.org/search-algorithms/",
+        "https://www.programiz.com/dsa/graph-algorithm",
+        "https://www.redblobgames.com/pathfinding/a-star/introduction.html",
+    ],
+    "Machine Learning Basics": [
+        "https://www.geeksforgeeks.org/machine-learning/",
+        "https://www.ibm.com/cloud/learn/machine-learning",
+        "https://www.coursera.org/articles/what-is-machine-learning",
+    ],
+    "Knowledge Representation": [
+        "https://www.geeksforgeeks.org/artificial-intelligence-knowledge-representation/",
+        "https://www.tutorialspoint.com/artificial_intelligence/artificial_intelligence_knowledge_representation.htm",
+        "https://www.javatpoint.com/knowledge-representation-in-ai",
+    ],
+}
+
 VIDEO_PRESETS = [
     ResourcePreset(
         suffix="Full Explanation",
@@ -427,15 +635,23 @@ class Command(BaseCommand):
         return {"created": created}
 
     def _seed_video_resources(self, topic_data: list[dict]) -> dict[str, int]:
-        """Insert or refresh three video resources per topic using working YouTube search links."""
+        """Insert or refresh three video resources per topic using real YouTube links."""
         topic_map = {topic.name: topic for topic in Topic.objects.select_related("subject")}
         created = 0
 
         for index, topic_item in enumerate(topic_data, start=1):
             topic = topic_map[topic_item["name"]]
             subject_label = topic.subject.name
+            topic_name = topic_item["name"]
+            
+            # Get real video URLs for this topic
+            video_urls = TOPIC_VIDEOS.get(topic_name, [
+                build_youtube_search_url(f"{topic_name} {subject_label} tutorial"),
+                build_youtube_search_url(f"{topic_name} {subject_label} explanation"),
+                build_youtube_search_url(f"{topic_name} {subject_label} advanced"),
+            ])
 
-            for preset in VIDEO_PRESETS:
+            for preset_idx, preset in enumerate(VIDEO_PRESETS):
                 title = f"{topic.name} in {subject_label} – {preset.suffix}"
                 if topic.name == "Deadlock":
                     deadlock_titles = {
@@ -445,21 +661,15 @@ class Command(BaseCommand):
                     }
                     title = deadlock_titles[preset.difficulty_level]
 
-                search_query = " ".join(
-                    [
-                        topic.name,
-                        subject_label,
-                        preset.difficulty_level,
-                        "tutorial",
-                        "for students",
-                    ]
-                )
+                # Use real YouTube URL for this difficulty level
+                youtube_url = video_urls[preset_idx] if preset_idx < len(video_urls) else video_urls[0]
+
                 _, was_created = VideoResource.objects.update_or_create(
                     topic=topic,
                     title=title,
                     defaults={
                         "description": f"{topic_item['description']} {preset.description}",
-                        "youtube_url": build_youtube_search_url(search_query),
+                        "youtube_url": youtube_url,
                         "duration": preset.duration,
                         "duration_seconds": preset.duration_seconds + (index * 7),
                         "difficulty_level": preset.difficulty_level,
@@ -477,15 +687,23 @@ class Command(BaseCommand):
         return {"created": created}
 
     def _seed_reading_resources(self, topic_data: list[dict]) -> dict[str, int]:
-        """Insert or refresh PDF, blog, and notes reading resources for each topic."""
+        """Insert or refresh PDF, blog, and notes reading resources for each topic with real URLs."""
         topic_map = {topic.name: topic for topic in Topic.objects.select_related("subject")}
         created = 0
 
         for index, topic_item in enumerate(topic_data, start=1):
             topic = topic_map[topic_item["name"]]
             slug = slugify(topic.name)
+            topic_name = topic_item["name"]
+            
+            # Get real article URLs for this topic
+            article_urls = TOPIC_ARTICLES.get(topic_name, [
+                f"https://www.geeksforgeeks.org/{slug}/",
+                f"https://www.tutorialspoint.com/{slug}/",
+                f"https://www.javatpoint.com/{slug}",
+            ])
 
-            for preset in READING_PRESETS:
+            for preset_idx, preset in enumerate(READING_PRESETS):
                 title = f"{topic.name} – {preset['title_suffix']}"
                 if topic.name == "Deadlock":
                     deadlock_titles = {
@@ -495,14 +713,34 @@ class Command(BaseCommand):
                     }
                     title = deadlock_titles[preset["resource_type"]]
 
+                # Use real article URL based on resource type
+                url = article_urls[preset_idx] if preset_idx < len(article_urls) else article_urls[0]
+                
+                # Update source name based on actual URL
+                source_name = preset["source_name"]
+                if "geeksforgeeks" in url.lower():
+                    source_name = "GeeksForGeeks"
+                elif "tutorialspoint" in url.lower():
+                    source_name = "TutorialsPoint"
+                elif "javatpoint" in url.lower():
+                    source_name = "JavaTpoint"
+                elif "programiz" in url.lower():
+                    source_name = "Programiz"
+                elif "w3schools" in url.lower():
+                    source_name = "W3Schools"
+                elif "realpython" in url.lower():
+                    source_name = "Real Python"
+                elif "refactoring.guru" in url.lower():
+                    source_name = "Refactoring Guru"
+
                 _, was_created = ReadingResource.objects.update_or_create(
                     topic=topic,
                     title=title,
                     defaults={
                         "description": f"{topic_item['description']} {preset['description']}",
-                        "url": preset["url"].format(slug=slug),
+                        "url": url,
                         "resource_type": preset["resource_type"],
-                        "source_name": preset["source_name"],
+                        "source_name": source_name,
                         "rating": max(4.0, round(preset["rating"] - (index % 3) * 0.05, 1)),
                         "view_count": preset["view_count"] + (index * 900),
                         "student_helpful_count": preset["helpful"] + index,

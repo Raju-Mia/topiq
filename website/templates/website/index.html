@@ -16,7 +16,6 @@
       <span class="hero-logo-text">Top<span>iq</span></span>
     </a>
 
-    <div class="hero-badge">★ Smart Resource Finder for University Students</div>
     <h1>Find the <em>Best Resources</em><br>for Any Topic, Instantly</h1>
     <p>No more searching across YouTube, blogs, notes, and PDFs separately. Topiq helps you reach the best study material in one clean flow.</p>
 
@@ -39,35 +38,9 @@
 <section class="container">
   <div class="stats-bar">
     <div class="stat-chip">📚 <strong>{{ total_resources }}+</strong> Resources Available</div>
-    <div class="stat-chip">🎯 Topic-Based Smart Search</div>
+    <div class="stat-chip">🎯 Smart Topic Search</div>
     <div class="stat-chip">🤖 AI Study Assistant</div>
   </div>
-</section>
-
-<section class="container home-section">
-  {% if semesters %}
-  <div class="semester-filter">
-    <span>Filter by Semester:</span>
-    <div class="chip-row">
-      {% for semester in semesters %}
-      <a href="{% url 'website:search_results' %}?semester={{ semester.id }}" class="semester-chip">
-        {{ semester.name }}
-      </a>
-      {% endfor %}
-    </div>
-  </div>
-  {% endif %}
-
-  {% if recent_searches %}
-  <div class="recent-searches">
-    <span>Recent:</span>
-    <div class="chip-row">
-      {% for search in recent_searches %}
-      <a href="{% url 'website:search_results' %}?q={{ search|urlencode }}" class="recent-chip">{{ search }}</a>
-      {% endfor %}
-    </div>
-  </div>
-  {% endif %}
 </section>
 
 <section class="container home-section">
