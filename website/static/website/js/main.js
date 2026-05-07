@@ -1,11 +1,45 @@
 /* Initialize all interactive behavior once the DOM is ready. */
 document.addEventListener("DOMContentLoaded", () => {
+  initNavbar();
   initSearch();
   initChatPanel();
   initFeedback();
   initBookmark();
   initToasts();
 });
+
+/* Set up fixed navbar: hamburger toggle and scroll background. */
+function initNavbar() {
+  const hamburger = document.getElementById("navHamburger");
+  const navLinks = document.getElementById("navLinks");
+  const navbar = document.getElementById("siteNavbar");
+
+  if (hamburger && navLinks) {
+    hamburger.addEventListener("click", () => {
+      const isOpen = hamburger.classList.toggle("open");
+      navLinks.classList.toggle("open");
+      hamburger.setAttribute("aria-expanded", String(isOpen));
+    });
+
+    /* Close mobile menu when a nav link is clicked */
+    navLinks.querySelectorAll(".nav-link").forEach((link) => {
+      link.addEventListener("click", () => {
+        hamburger.classList.remove("open");
+        navLinks.classList.remove("open");
+        hamburger.setAttribute("aria-expanded", "false");
+      });
+    });
+  }
+
+  /* Add scroll shadow to navbar */
+  if (navbar) {
+    const onScroll = () => {
+      navbar.classList.toggle("scrolled", window.scrollY > 20);
+    };
+    window.addEventListener("scroll", onScroll, { passive: true });
+    onScroll();
+  }
+}
 
 /* Set up search form behavior, loading states, and autofocus. */
 function initSearch() {
@@ -33,13 +67,27 @@ function initSearch() {
     });
   });
 
-  if (document.body.dataset.pageTitle.includes("Results")) {
+  if (document.body.dataset.pageTitle && document.body.dataset.pageTitle.includes("Results")) {
     const resultsSearchInput = document.querySelector('.hero-search-row input[name="q"]');
     if (resultsSearchInput) {
       resultsSearchInput.focus();
       resultsSearchInput.setSelectionRange(resultsSearchInput.value.length, resultsSearchInput.value.length);
     }
   }
+
+  // Handle browser back button (bfcache) returning to a page with a loading button
+  window.addEventListener("pageshow", (event) => {
+    searchForms.forEach((form) => {
+      const button = form.querySelector(".search-btn");
+      if (button && button.classList.contains("loading")) {
+        button.disabled = false;
+        button.classList.remove("loading");
+        if (button.dataset.originalText) {
+          button.textContent = button.dataset.originalText;
+        }
+      }
+    });
+  });
 }
 
 /* Wire up chat toggling, message sending, and AI response fetching. */

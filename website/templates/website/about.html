@@ -1,0 +1,204 @@
+{% extends 'website/base.html' %}
+{% load static %}
+
+{% block title %}About — Topiq{% endblock %}
+
+{% block content %}
+<!-- About Hero -->
+<section class="about-hero">
+  <div class="container about-hero-inner">
+    <span class="eyebrow">About This Project</span>
+    <h1>Topiq — Smart Study<br><em>Resource Finder</em></h1>
+    <p class="about-hero-subtitle">An intelligent platform that helps university students find the best learning resources for any topic — instantly.</p>
+  </div>
+</section>
+
+<!-- What & Why -->
+<section class="container about-section">
+  <div class="about-grid-2">
+    <article class="about-card">
+      <div class="about-card-icon">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"></path></svg>
+      </div>
+      <h2>What is Topiq?</h2>
+      <p>Topiq is a smart study resource recommendation system designed as a final-year project. It aggregates video lectures, articles, blogs, and reading materials into one unified search experience for university students — powered by an intelligent recommendation engine that ranks the most relevant content.</p>
+    </article>
+
+    <article class="about-card">
+      <div class="about-card-icon accent-amber-bg">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z"></path></svg>
+      </div>
+      <h2>Why Was It Built?</h2>
+      <p>University students waste significant time searching across YouTube, Google, and multiple websites to find quality study materials. Topiq solves this by providing a single, intelligent search point that ranks and recommends the most relevant resources — saving hours of manual filtering.</p>
+    </article>
+  </div>
+</section>
+
+<!-- Problems Solved -->
+<section class="container about-section">
+  <div class="about-section-header">
+    <span class="eyebrow">Real-World Impact</span>
+    <h2>Problems Topiq Solves</h2>
+  </div>
+
+  <div class="about-grid-4">
+    <article class="about-problem-card">
+      <div class="about-problem-num">01</div>
+      <h3>Fragmented Resources</h3>
+      <p>Learning materials are scattered across YouTube, blogs, PDFs, and university portals with no single access point.</p>
+    </article>
+    <article class="about-problem-card">
+      <div class="about-problem-num">02</div>
+      <h3>Wasted Time</h3>
+      <p>Students spend hours filtering through low-quality or irrelevant content before finding useful materials.</p>
+    </article>
+    <article class="about-problem-card">
+      <div class="about-problem-num">03</div>
+      <h3>No Smart Ranking</h3>
+      <p>Generic search engines don't provide personalized or topic-aware resource ranking for university syllabi.</p>
+    </article>
+    <article class="about-problem-card">
+      <div class="about-problem-num">04</div>
+      <h3>No Study Assistant</h3>
+      <p>Students lack an academic-focused AI assistant for quick clarifications without leaving their study flow.</p>
+    </article>
+  </div>
+</section>
+
+<!-- Benefits -->
+<section class="container about-section">
+  <div class="about-section-header">
+    <span class="eyebrow">Student Benefits</span>
+    <h2>How It Helps You Learn</h2>
+  </div>
+
+  <div class="about-grid-2">
+    <article class="about-benefit-card">
+      <div class="benefit-icon accent-green-bg">✦</div>
+      <div>
+        <h3>Instant Top Results</h3>
+        <p>Search once, get the top 3 video + reading resources instantly — no more opening ten tabs.</p>
+      </div>
+    </article>
+    <article class="about-benefit-card">
+      <div class="benefit-icon accent-blue-bg">✦</div>
+      <div>
+        <h3>Course-Aligned Matching</h3>
+        <p>Topic-aware matching aligned with university course structure and syllabi for relevant results.</p>
+      </div>
+    </article>
+    <article class="about-benefit-card">
+      <div class="benefit-icon accent-purple-bg">✦</div>
+      <div>
+        <h3>Community Feedback Loop</h3>
+        <p>Student feedback improves recommendations over time — the more you use it, the smarter it gets.</p>
+      </div>
+    </article>
+    <article class="about-benefit-card">
+      <div class="benefit-icon accent-red-bg">✦</div>
+      <div>
+        <h3>Built-In AI Assistant</h3>
+        <p>Ask follow-up academic questions and get concise, study-friendly explanations without switching context.</p>
+      </div>
+    </article>
+  </div>
+</section>
+
+<!-- Future Plans -->
+<section class="container about-section">
+  <div class="about-section-header">
+    <span class="eyebrow">Roadmap</span>
+    <h2>Future Plans & Improvements</h2>
+  </div>
+
+  <div class="about-timeline">
+    <div class="timeline-item">
+      <div class="timeline-dot"></div>
+      <div class="timeline-content">
+        <h3>Multi-University Expansion</h3>
+        <p>Expand to cover all departments and universities beyond Daffodil International University.</p>
+      </div>
+    </div>
+    <div class="timeline-item">
+      <div class="timeline-dot"></div>
+      <div class="timeline-content">
+        <h3>Collaborative Study Groups</h3>
+        <p>Integrate peer notes sharing and collaborative study group features for team-based learning.</p>
+      </div>
+    </div>
+    <div class="timeline-item">
+      <div class="timeline-dot"></div>
+      <div class="timeline-content">
+        <h3>Progress Tracking</h3>
+        <p>Add personalized study plans and progress tracking dashboards for each student.</p>
+      </div>
+    </div>
+    <div class="timeline-item">
+      <div class="timeline-dot"></div>
+      <div class="timeline-content">
+        <h3>Mobile App</h3>
+        <p>Launch a dedicated mobile application for on-the-go learning and resource discovery.</p>
+      </div>
+    </div>
+    <div class="timeline-item">
+      <div class="timeline-dot"></div>
+      <div class="timeline-content">
+        <h3>Instructor Dashboard</h3>
+        <p>Build an instructor-facing panel for uploading and curating recommended resources per course.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- Credits -->
+<section class="container about-section about-credits">
+  <div class="about-section-header">
+    <span class="eyebrow">Project Credits</span>
+    <h2>Meet the Team</h2>
+  </div>
+
+  <div class="about-grid-2">
+    <article class="about-credit-card">
+      <div class="credit-card-header">
+        <div class="credit-avatar student-avatar">SI</div>
+        <div>
+          <span class="credit-role">Project Developer</span>
+          <h3>Sadikul Islam</h3>
+        </div>
+      </div>
+      <ul class="credit-details">
+        <li><span class="credit-label">ID</span><span>181-15-10815</span></li>
+        <li><span class="credit-label">Department</span><span>Computer Science and Engineering</span></li>
+        <li><span class="credit-label">University</span><span>Daffodil International University</span></li>
+      </ul>
+    </article>
+
+    <article class="about-credit-card">
+      <div class="credit-card-header">
+        <div class="credit-avatar supervisor-avatar">HH</div>
+        <div>
+          <span class="credit-role">Project Supervisor</span>
+          <h3>Ms. Most. Hasna Hena</h3>
+        </div>
+      </div>
+      <ul class="credit-details">
+        <li><span class="credit-label">Designation</span><span>Assistant Professor</span></li>
+        <li><span class="credit-label">Department</span><span>Computer Science and Engineering</span></li>
+        <li><span class="credit-label">Faculty</span><span>Faculty of Science and Information Technology</span></li>
+        <li><span class="credit-label">E-mail</span><span><a href="mailto:hena.cse@diu.edu.bd" class="credit-link">hena.cse@diu.edu.bd</a></span></li>
+        <li><span class="credit-label">Phone</span><span>+8809617901233</span></li>
+        <li><span class="credit-label">Cell</span><span>+88 01719472885</span></li>
+      </ul>
+    </article>
+  </div>
+</section>
+
+<!-- CTA -->
+<section class="container about-section about-cta-section">
+  <div class="about-cta">
+    <h2>Ready to find the best study resources?</h2>
+    <p>Start searching for any university topic and discover curated video lectures, articles, and more — all in one place.</p>
+    <a href="{% url 'website:index' %}" class="about-cta-btn">Start Searching →</a>
+  </div>
+</section>
+{% endblock %}

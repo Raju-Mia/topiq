@@ -25,6 +25,31 @@
   data-subject="{{ subject_name|default:'' }}"
 >
   <div class="site-shell">
+    <!-- Fixed Navbar -->
+    <nav class="site-navbar" id="siteNavbar" aria-label="Main navigation">
+      <div class="container navbar-inner">
+        <a href="{% url 'website:index' %}" class="navbar-logo" aria-label="Topiq home">
+          <div class="navbar-logo-mark">
+            <svg viewBox="0 0 24 24" aria-hidden="true">
+              <path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"></path>
+            </svg>
+          </div>
+          <span class="navbar-logo-text">Top<span>iq</span></span>
+        </a>
+
+        <button class="navbar-hamburger" id="navHamburger" type="button" aria-label="Toggle navigation menu" aria-expanded="false">
+          <span class="hamburger-bar"></span>
+          <span class="hamburger-bar"></span>
+          <span class="hamburger-bar"></span>
+        </button>
+
+        <ul class="navbar-links" id="navLinks">
+          <li><a href="{% url 'website:index' %}" class="nav-link {% if request.resolver_match.url_name == 'index' %}active{% endif %}">Home</a></li>
+          <li><a href="{% url 'website:about' %}" class="nav-link {% if request.resolver_match.url_name == 'about' %}active{% endif %}">About Us</a></li>
+        </ul>
+      </div>
+    </nav>
+
     {% if messages %}
     <section class="message-stack container" aria-label="Site messages">
       {% for message in messages %}
@@ -67,7 +92,7 @@
         </button>
       </div>
 
-      <div class="chat-messages" id="chatMessages" data-topic-context="{{ matched_topic.name|default:query|default:'' }}">
+      <div class="chat-messages" id="chatMessages" data-topic-context="{% firstof matched_topic.name query '' %}">
         <div class="msg ai">
           <div class="msg-avatar">AI</div>
           <div class="msg-bubble">

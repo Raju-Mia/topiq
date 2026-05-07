@@ -1,0 +1,732 @@
+TOPIQ PROJECT DOCUMENTATION
+===========================
+
+Project Name:
+Topiq - Smart Learning Resource Recommendation System
+
+Project Type:
+University Final Year Project
+
+Project Summary:
+Topiq is a Django-based web application that helps university students find useful study resources for academic topics. A student can search a topic such as "Deadlock", "Binary Tree", or "Normalization" and the system recommends the top video resources and reading resources. The project also includes student feedback, bookmark support, topic matching, recommendation scoring, and an AI study assistant for academic questions.
+
+
+1. PROJECT FOLDER STRUCTURE
+===========================
+
+Topiq project root:
+
+topiq/
+|-- manage.py
+|-- requirements.txt
+|-- db.sqlite3
+|-- README.md
+|-- project-workflow.mmd
+|-- diagram-project-workflow.svg
+|
+|-- topiq/
+|   |-- __init__.py
+|   |-- settings.py
+|   |-- urls.py
+|   |-- asgi.py
+|   |-- wsgi.py
+|
+|-- website/
+|   |-- __init__.py
+|   |-- admin.py
+|   |-- apps.py
+|   |-- forms.py
+|   |-- models.py
+|   |-- recommender.py
+|   |-- tests.py
+|   |-- urls.py
+|   |-- views.py
+|   |
+|   |-- migrations/
+|   |   |-- __init__.py
+|   |   |-- 0001_initial.py
+|   |
+|   |-- management/
+|   |   |-- __init__.py
+|   |   |-- commands/
+|   |       |-- __init__.py
+|   |       |-- seed_data.py
+|   |
+|   |-- templates/
+|   |   |-- website/
+|   |       |-- base.html
+|   |       |-- index.html
+|   |       |-- results.html
+|   |
+|   |-- static/
+|       |-- website/
+|           |-- css/
+|           |   |-- style.css
+|           |-- js/
+|               |-- main.js
+|
+|-- documentation/
+|   |-- documentation.txt
+
+
+Main Folder Explanation:
+
+manage.py:
+Runs Django commands such as runserver, migrate, test, and createsuperuser.
+
+topiq/:
+Main Django project configuration. It contains settings, root URL routing, ASGI, and WSGI files.
+
+website/:
+Main Django application. It contains models, views, URLs, forms, templates, static files, recommendation logic, admin configuration, and seed data command.
+
+website/models.py:
+Defines the database schema for Semester, Subject, Topic, VideoResource, ReadingResource, and StudentInteraction.
+
+website/views.py:
+Handles homepage, search results, API search, AI chat, bookmark, and feedback requests.
+
+website/recommender.py:
+Contains the topic matching and recommendation logic. It uses TF-IDF and cosine similarity when scikit-learn is available, with a fallback string matching method.
+
+website/templates/website/:
+Contains HTML templates for the website layout, homepage, and search results page.
+
+website/static/website/css/style.css:
+Contains the full frontend design system, including dark theme, navbar, hero section, cards, result grid, About Us section, chat panel, and responsive styles.
+
+website/static/website/js/main.js:
+Contains frontend interactivity for search loading state, AI chat panel, feedback, bookmark, copy button, and toast notifications.
+
+website/management/commands/seed_data.py:
+Custom command for inserting demo semesters, subjects, topics, videos, and reading resources.
+
+documentation/:
+Contains all written project documents, reports, guide files, and presentation support files.
+
+
+2. USER ACTIVITY DIAGRAM DESIGN
+===============================
+
+Text Activity Diagram:
+
+Start
+  |
+  v
+Student opens Topiq website
+  |
+  v
+Homepage is displayed with navbar, hero search, project sections, and AI chat button
+  |
+  v
+Student enters academic topic in search box
+  |
+  v
+System validates search query
+  |
+  +-- If query is empty or too short:
+  |      |
+  |      v
+  |   Show error message and return to homepage
+  |
+  +-- If query is valid:
+         |
+         v
+      Send GET request to /search/?q=topic
+         |
+         v
+      Django search_results view receives request
+         |
+         v
+      Recommender matches query with stored topics
+         |
+         v
+      System checks topic similarity score
+         |
+         +-- If no topic matched:
+         |      |
+         |      v
+         |   Show no-results page with retry search
+         |
+         +-- If topic matched:
+                |
+                v
+             Fetch top 3 videos by ml_score
+                |
+                v
+             Fetch top 3 reading resources by ml_score
+                |
+                v
+             Calculate average study time
+                |
+                v
+             Find similar topics
+                |
+                v
+             Render results page
+                |
+                v
+             Student views recommended videos and readings
+                |
+                +-- Student clicks Helpful / Not Helpful
+                |      |
+                |      v
+                |   POST /feedback/
+                |      |
+                |      v
+                |   Save StudentInteraction
+                |      |
+                |      v
+                |   Update resource feedback count and ml_score
+                |
+                +-- Student clicks Save Topic
+                |      |
+                |      v
+                |   POST /bookmark/
+                |      |
+                |      v
+                |   Save bookmark in session and interaction table
+                |
+                +-- Student opens AI Study Assistant
+                       |
+                       v
+                    Ask academic question
+                       |
+                       v
+                    POST /api/chat/
+                       |
+                       v
+                    AI provider returns academic answer
+                       |
+                       v
+                    Show answer in chat panel
+                       |
+                       v
+                    End
+
+
+Mermaid Activity Diagram Design:
+
+flowchart TD
+    A([Start]) --> B[Student opens Topiq website]
+    B --> C[Homepage loads with navbar, hero search, About Us, and AI chat button]
+    C --> D[Student enters topic]
+    D --> E{Is query valid?}
+    E -- No --> F[Show message and ask student to enter valid topic]
+    F --> D
+    E -- Yes --> G[GET /search/?q=topic]
+    G --> H[search_results view]
+    H --> I[Run recommender search_topics]
+    I --> J[Normalize query and build topic corpus]
+    J --> K[TF-IDF vectorization and cosine similarity]
+    K --> L{Topic matched?}
+    L -- No --> M[Show no-results page]
+    M --> D
+    L -- Yes --> N[Fetch top 3 videos]
+    N --> O[Fetch top 3 readings]
+    O --> P[Calculate average study time and related topics]
+    P --> Q[Render results.html]
+    Q --> R[Student studies resources]
+    R --> S{Student action}
+    S -- Helpful / Not Helpful --> T[POST /feedback/]
+    T --> U[Save interaction and update ml_score]
+    U --> R
+    S -- Save Topic --> V[POST /bookmark/]
+    V --> W[Save bookmark in session]
+    W --> R
+    S -- Ask AI --> X[POST /api/chat/]
+    X --> Y[Return academic answer]
+    Y --> R
+    R --> Z([End])
+
+
+3. WEBSITE WORKFLOW
+===================
+
+3.1 Setup Workflow:
+
+1. Open project folder.
+2. Create or activate virtual environment.
+3. Install dependencies from requirements.txt.
+4. Configure .env values such as SECRET_KEY, DEBUG, ALLOWED_HOSTS, GROQ_API_KEY, or ANTHROPIC_API_KEY.
+5. Run database migrations.
+6. Run seed_data command for demo data.
+7. Start Django server.
+8. Open website in browser.
+
+Common Commands:
+
+source myenv/bin/activate
+pip install -r requirements.txt
+python manage.py migrate
+python manage.py seed_data
+python manage.py runserver
+
+
+3.2 Page Workflow:
+
+Homepage:
+The homepage contains a fixed navbar, Topiq branding, hero search section, project highlight, feature cards, About Us section, and AI chat floating button.
+
+Search Request:
+When the student searches a topic, the browser sends:
+
+GET /search/?q=topic-name
+
+Django Routing:
+topiq/urls.py sends website requests to website/urls.py.
+website/urls.py maps /search/ to the search_results view.
+
+Search Processing:
+The search_results view validates the query, checks cache, calls search_topics(query), stores recent searches in session, prepares context, and renders results.html.
+
+Recommendation Engine:
+The recommender loads active topics from the database, builds a searchable topic corpus, normalizes the student query, compares the query with stored topics, selects the best matched topic, fetches top resources, and returns a structured result.
+
+Results Page:
+The results page displays top video suggestions, article/blog/PDF resources, metadata, difficulty badges, ratings, feedback buttons, bookmark button, average study time, and related topics.
+
+Feedback Workflow:
+When a student clicks Helpful or Not Helpful, JavaScript sends a POST request to /feedback/. The backend saves or updates StudentInteraction, changes helpful/not helpful counts, recalculates ml_score, and returns JSON to update the UI.
+
+Bookmark Workflow:
+When a student clicks Save Topic, JavaScript sends a POST request to /bookmark/. The backend stores the topic ID in the Django session and records a StudentInteraction.
+
+AI Chat Workflow:
+The AI chat panel sends academic questions to /api/chat/. The backend builds an academic-only prompt, calls the configured AI provider, and returns a concise answer to the chat panel.
+
+
+4. SYSTEM WORKFLOW DIAGRAM DESIGN
+=================================
+
+High Level Website Workflow:
+
+Student Browser
+  |
+  | 1. Open homepage / search topic / send feedback / ask AI
+  v
+Django URL Router
+  |
+  v
+Website Views
+  |
+  +-- index view
+  |     |
+  |     v
+  |  Render homepage
+  |
+  +-- search_results view
+  |     |
+  |     v
+  |  Call recommender.py
+  |     |
+  |     v
+  |  Query database and render results
+  |
+  +-- submit_feedback view
+  |     |
+  |     v
+  |  Save feedback and update ml_score
+  |
+  +-- bookmark_topic view
+  |     |
+  |     v
+  |  Save bookmark in session
+  |
+  +-- ai_chat view
+        |
+        v
+     Send academic prompt to AI provider
+
+
+Frontend to Backend Workflow:
+
+HTML Templates:
+base.html -> shared layout, navbar, footer, chat panel
+index.html -> homepage, hero search, feature sections, About Us section
+results.html -> search results, resource cards, feedback, bookmarks
+
+Static Files:
+style.css -> all responsive UI design
+main.js -> search loading, AJAX feedback, bookmark, AI chat, toasts
+
+Backend Files:
+urls.py -> route mapping
+views.py -> request handling
+models.py -> database structure
+recommender.py -> ML matching and ranking
+
+
+5. DATABASE DESIGN SCHEMA
+=========================
+
+Database:
+SQLite database file: db.sqlite3
+
+Main Entities:
+
+Semester
+--------
+id
+name
+order
+is_active
+created_at
+
+Subject
+-------
+id
+semester_id
+name
+code
+description
+is_active
+created_at
+
+Topic
+-----
+id
+subject_id
+name
+slug
+description
+tags
+search_keywords
+is_active
+created_at
+updated_at
+
+VideoResource
+-------------
+id
+topic_id
+title
+description
+youtube_url
+youtube_video_id
+thumbnail_url
+duration
+duration_seconds
+difficulty_level
+view_count
+rating
+student_helpful_count
+student_not_helpful_count
+ml_score
+is_active
+created_at
+updated_at
+
+ReadingResource
+---------------
+id
+topic_id
+title
+description
+url
+resource_type
+source_name
+rating
+view_count
+student_helpful_count
+student_not_helpful_count
+ml_score
+is_active
+created_at
+updated_at
+
+StudentInteraction
+------------------
+id
+session_key
+topic_id
+resource_type
+resource_id
+interaction_type
+created_at
+
+
+Entity Relationship:
+
+Semester 1 --- many Subject
+Subject 1 --- many Topic
+Topic 1 --- many VideoResource
+Topic 1 --- many ReadingResource
+Topic 1 --- many StudentInteraction
+
+
+ER Diagram Design:
+
+Semester
+  |
+  | one to many
+  v
+Subject
+  |
+  | one to many
+  v
+Topic
+  |--------------------|
+  |                    |
+  v                    v
+VideoResource       ReadingResource
+  |                    |
+  |                    |
+  +---------+----------+
+            |
+            v
+StudentInteraction
+
+
+6. RECOMMENDATION DESIGN SCHEMA
+===============================
+
+Topic Matching:
+
+Input:
+Student search query
+
+Processing:
+1. Normalize query by removing special characters and extra spaces.
+2. Build topic corpus from topic name, subject name, tags, search keywords, and description.
+3. Use TF-IDF vectorizer to convert text into numeric vectors.
+4. Use cosine similarity to compare student query with each topic.
+5. Select the highest matching topic above the similarity threshold.
+6. If TF-IDF fails or scikit-learn is missing, use fallback string matching.
+
+Output:
+Matched topic, confidence score, top videos, top readings, average study time, and related topics.
+
+
+Resource Ranking Formula:
+
+normalized_view_count = view_count / 1,000,000
+feedback_score = helpful_count / total_feedback
+ml_score = rating * 0.4 + normalized_view_count * 0.3 + feedback_score * 0.3
+
+Ranking Factors:
+
+Rating:
+Shows resource quality.
+
+View Count:
+Shows popularity and usage.
+
+Student Feedback:
+Shows real usefulness from Topiq users.
+
+ML Score:
+Final score used to order resources.
+
+
+7. UI DESIGN SCHEMA
+===================
+
+Design Style:
+Modern academic dashboard style with a dark theme, clean spacing, rounded cards, and professional contrast.
+
+Color Schema:
+
+Main Background:
+#0a0a0f
+
+Card Background:
+#111118
+
+Card Hover Background:
+#16161f
+
+Primary Text:
+#e8e8f0
+
+Secondary Text:
+#888899
+
+Muted Text:
+#55556a
+
+Primary Accent:
+#6366f1
+
+Violet Accent:
+#8b5cf6
+
+Red Accent:
+#dc2626
+
+Blue Accent:
+#1e88e5
+
+Green Accent:
+#059669
+
+Amber Accent:
+#f59e0b
+
+Gold Accent:
+#facc15
+
+Primary Gradient:
+linear-gradient(135deg, #6366f1, #8b5cf6)
+
+Red Gradient:
+linear-gradient(135deg, #dc2626, #ef4444)
+
+
+Typography:
+
+Font Family:
+Inter
+
+Display Font:
+Inter
+
+Usage:
+Large bold headings for hero and section titles.
+Medium weight text for cards and labels.
+Small uppercase eyebrow text for section labels.
+Readable paragraph text for project explanation.
+
+
+Layout Schema:
+
+Navbar:
+Fixed at top.
+Topiq logo on left.
+Home and About Us links on right.
+Responsive mobile layout stacks logo and menu.
+
+Hero Section:
+Centered content.
+Final year project badge.
+Large headline.
+Short project value text.
+Search card with input and search button.
+
+Stats Bar:
+Horizontal chips showing resources, smart search, and AI assistant.
+
+Feature Sections:
+Card grid layout.
+Cards use icons, short headings, and concise descriptions.
+
+Results Page:
+Two-column layout on desktop.
+Single-column layout on tablet/mobile.
+Left side shows video cards.
+Right side shows reading resource cards.
+
+About Us Section:
+Professional project explanation.
+Four cards for development reason, solved problems, benefits, and future plan.
+Side panel for student and supervisor academic information.
+
+AI Chat:
+Floating action button.
+Full-screen chat overlay.
+Academic-only assistant.
+Message bubbles, typing indicator, copy button, and input row.
+
+Responsive Design:
+Desktop uses multi-column grids.
+Tablet changes result and about layouts to one column.
+Mobile stacks forms, cards, navbar menu, feedback buttons, and article cards.
+
+
+8. FRONTEND INTERACTION DESIGN
+==============================
+
+Search:
+Student types a topic and submits the form.
+Button shows loading state while search request is processing.
+
+Feedback:
+Helpful and Not Helpful buttons send AJAX POST requests.
+Selected feedback button becomes active.
+Helpful count updates without full page reload.
+
+Bookmark:
+Save Topic button sends AJAX POST request.
+Button state changes between saved and unsaved.
+All bookmark buttons for the same topic stay synchronized.
+
+AI Chat:
+Floating button opens chat.
+Student types academic question.
+JavaScript sends POST request to /api/chat/.
+AI reply appears in chat panel.
+Copy button allows copying AI answer.
+
+Toast Messages:
+Small notification messages appear for success and error actions.
+
+
+9. BACKEND API ENDPOINTS
+========================
+
+GET /
+Purpose:
+Display homepage.
+
+GET /search/?q=topic
+Purpose:
+Display search results for a topic.
+
+GET /api/search/?q=topic
+Purpose:
+Return search result as JSON.
+
+POST /api/chat/
+Purpose:
+Send academic question to AI assistant and return reply.
+
+POST /bookmark/
+Purpose:
+Add or remove topic bookmark.
+
+POST /feedback/
+Purpose:
+Save helpful or not helpful feedback for a video or reading resource.
+
+
+10. PROJECT BENEFITS
+====================
+
+For Students:
+1. Reduces time spent searching across many websites.
+2. Shows videos and reading materials in one place.
+3. Helps compare fewer but better resources.
+4. Supports topic-based academic study.
+5. Allows feedback so useful resources rank better.
+6. Provides AI assistant for academic follow-up questions.
+
+For Academic Presentation:
+1. Demonstrates Django web development.
+2. Demonstrates database design and model relationships.
+3. Demonstrates machine learning based topic matching.
+4. Demonstrates recommendation scoring.
+5. Demonstrates AJAX-based frontend interaction.
+6. Demonstrates responsive UI design.
+
+
+11. FUTURE PLAN AND IMPROVEMENTS
+================================
+
+Future improvements:
+
+1. Add student login and personal dashboard.
+2. Add personalized resource recommendation based on user history.
+3. Add larger dataset with more semesters, subjects, and topics.
+4. Add real-time resource collection from YouTube or other APIs.
+5. Add admin analytics dashboard.
+6. Add more advanced AI study planning features.
+7. Add quiz and self-assessment for each topic.
+8. Add resource quality moderation and verification.
+9. Add department-specific and semester-specific study paths.
+10. Prepare the system for production deployment.
+
+
+12. FINAL NOTE
+==============
+
+Topiq is designed as a smart academic resource finder for university students. It combines Django, SQLite, TF-IDF based topic matching, recommendation scoring, feedback learning, bookmarks, and AI academic assistance in one clean website. The system is suitable for final year project demonstration, academic presentation, and future improvement into a larger learning platform.

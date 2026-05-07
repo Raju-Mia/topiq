@@ -146,6 +146,14 @@ def index(request):
         return render(request, "website/index.html", context, status=500)
 
 
+
+# -- VIEW: about --
+@require_GET
+def about(request):
+    """Render the About Us page."""
+    return render(request, "website/about.html", {"page_title": "About — Topiq"})
+
+
 # -- VIEW: search_results --
 @require_GET
 def search_results(request):
